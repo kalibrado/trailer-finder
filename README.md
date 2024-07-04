@@ -26,4 +26,4 @@ To learn how to contribute to Trailer Finder, refer to [this document](./doc/con
 
 ## Support
 
-If you encounter any issues or have questions, feel free to open an issue on the [GitHub repository](https://github.com/yourusername/trailer-finder).
+If you encounter any issues or have questions, feel free to open an issue on the [GitHub repository](https://github.com/kalibrado/trailer-finder/issues).
