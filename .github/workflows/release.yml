@@ -47,11 +47,10 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          # labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name: ${{ github.repository }}/${{ steps.meta.outputs.tags }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
