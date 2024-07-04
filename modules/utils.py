@@ -79,6 +79,7 @@ def trailer_pull(tmdb_id, item_type, parent_mode=False):
     )
     base_link = "api.themoviedb.org/3"
     api_key = config["tmdb_api"]
+
     url = f"https://{base_link}/{item_type}/{tmdb_id}/videos"
     if parent_mode:
         url = f"https://{base_link}/find/{tmdb_id}?external_source=imdb_id"
