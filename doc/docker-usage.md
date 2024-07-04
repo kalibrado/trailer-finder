@@ -21,8 +21,7 @@ docker pull ldfe/trailer-finder:latest
 docker run -d \
   --name=trailer-finder \
   -v /path/to/your/config.yaml:/app/config/config.yaml \
-  -v /mnt/Media1:/mnt/Media1 \
-  -v /mnt/Media2:/mnt/Media1 \
+  -v /mnt:/mnt \
   ldfe/trailer-finder:latest
 ```
 
@@ -42,8 +41,7 @@ services:
     restart: always
     volumes:
       - ./config.yaml:/app/config/config.yaml
-      - /mnt/Media1:/mnt/Media1
-      - /mnt/Media2:/mnt/Media1
+      - /mnt:/mnt
 ```
 
 ### Steps to Run with Docker Compose
