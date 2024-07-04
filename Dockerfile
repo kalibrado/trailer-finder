@@ -1,11 +1,8 @@
-FROM python:3.10.8
-RUN apt update && apt install -y ffmpeg
-
-WORKDIR /
-
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-
-COPY . /
-
-CMD python3 /main.py
+# Smaller Alpine image
+FROM python:3.11-alpine
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt && rm -rf ~/.cache/pip
+COPY . /app
+RUN ls /app/config & sleep 5m
+CMD ["python", "main.py"]
