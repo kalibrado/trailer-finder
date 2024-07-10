@@ -43,7 +43,7 @@ sonarr_api: "your_sonarr_api_key"
 radarr_host: "http://localhost:7878"
 radarr_api: "your_radarr_api_key"
 tmdb_api: "your_tmdb_api_key"
-output_dirs: "trailers"
+dir_backdrops: "trailers"
 yt_link_base: "https://www.youtube.com/watch?v="
 auth_yt_user: "your_youtube_username"
 auth_yt_pass: "your_youtube_password"
@@ -71,7 +71,7 @@ python trailer_finder.py
 
 ### 6. Check the Output
 
-The trailers will be saved in the directory specified in `output_dirs`.
+The trailers will be saved in the directory specified in `dir_backdrops`.
 
 ## Advanced Usage
 
@@ -108,4 +108,4 @@ Ensure that `sonarr_host`, `sonarr_api`, `radarr_host`, and `radarr_api` are cor
 - **Dependencies Issue**: Ensure all packages are installed correctly.
 - **API Errors**: Check your API keys.
 - **File Paths**: Verify file paths in `config.yaml`.
-- **Permissions**: Ensure you have permissions to write to the `output_dirs`.
+- **Permissions**: Ensure you have permissions to write to the `dir_backdrops`.

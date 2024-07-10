@@ -13,6 +13,7 @@ class Translator:
     """
     Main Class to set, find and load tranlate json.
     """
+
     def __init__(self, default_locale):
         """
         Initialize the Translator object with a default locale.
@@ -60,11 +61,11 @@ class Translator:
         text = self.translations.get(key)
         if text is None:
             # Default error message
-            text = f"An error occurred: Missing translation for key '{key}'"
+            error = f"Missing transalte for : {key}"
+            text = f"An error occurred: '{error}'"
 
         try:
             # Attempt to format the string with provided arguments
             return text.format(**kwargs)
-        except KeyError as e:
-            # Handle case where a key necessary for formatting doesn't exist
-            return f"An error occurred: Error formatting translation for key '{key}': missing key {e}"
+        except KeyError as error:
+            return f"An error occurred: {error}"
