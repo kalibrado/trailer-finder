@@ -6,86 +6,60 @@ This module interacts with the Radarr API to find and download trailers for movi
 
 import os
 from pyarr import RadarrAPI
-import modules.utils as ut
+from modules.logger import Logger
+from modules.utils import Utils
 
 
-def radarr():
+def radarr(logger: Logger, config: list, utils: Utils):
     """
     Main function to find and download trailers for movies using the Radarr API.
     """
-    radarr_api = RadarrAPI(ut.config["radarr_host"], ut.config["radarr_api"])
-    ut.log(ut.WHITE, "[ RADARR ]", "Movie trailer finder started.")
+    radarr_api = RadarrAPI(config["radarr_host"], config["radarr_api"])
+    logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
+    logger.info("[ RADARR ]", "Movie trailer finder started.")
 
     for movie in radarr_api.get_movie():
-        if not os.path.exists(movie["path"]) or not ut.check_space(movie["path"]):
+        dir_backdrops = os.path.join(movie["path"], config["dir_backdrops"])
+        if not os.path.exists(dir_backdrops):
+            continue
+        if movie["sizeOnDisk"] == 0:
+            continue
+        if not utils.check_space(movie["path"]):
             continue
 
-        ut.log(
-            ut.WHITE,
+        logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
+        trailer_count = len(os.listdir(dir_backdrops))
+        if config["only_one_trailer"] and trailer_count >= 1:
+            logger.success(
+                "\t ->",
+                "{title} ({year}) already has {count} trailers.",
+                title=movie["title"],
+                year=movie["year"],
+                count=trailer_count,
+            )
+            continue  # Move to the next movie
+
+        logger.info(
             "\t -> SCAN",
             "Looking for {title} ({year}) trailers",
             title=movie["title"],
             year=movie["year"],
         )
-        trailer_dir = os.path.join(movie["path"], ut.config["output_dirs"])
+        trailers = utils.trailer_pull(movie["tmdbId"], "movie")
 
-        if ut.config["only_one_trailer"]:
-            if os.path.exists(trailer_dir):
-                # Check the number of existing trailer files in trailer_dir
-                trailer_count = len(
-                    [
-                        file
-                        for file in os.listdir(trailer_dir)
-                        if file.endswith("." + ut.config["filetype"])
-                    ]
-                )
+        if len(trailers) == 0:
+            logger.warning(
+                "\t ->",
+                "No trailer is available for {title} ({year})",
+                title=movie["title"],
+                year=movie["year"],
+            )
+            continue
 
-                if trailer_count > 1:
-                    ut.log(
-                        ut.GREEN,
-                        "\t -> SCAN",
-                        "{title} ({year}) already has a trailer.",
-                        title=movie["title"],
-                        year=movie["year"],
-                    )
-                    continue  # Move to the next movie
+        utils.trailer_download(
+            utils.check_existing_trailer(trailers, os.listdir(dir_backdrops)),
+            movie,
+        )
 
-                trailers = ut.trailer_pull(movie["tmdbId"], "movie")
-                if len(trailers) == 0:
-                    continue
-                ut.trailer_download(
-                    ut.check_existing_trailer(trailers, os.listdir(trailer_dir)), movie
-                )
-
-            else:
-                # If trailer_dir doesn't exist, move to the next movie
-                ut.log(
-                    ut.RED,
-                    "\t -> SCAN",
-                    "{title} ({year}) has no trailer folder.",
-                    title=movie["title"],
-                    year=movie["year"],
-                )
-                continue
-
-        else:  # If only_one_trailer is False
-            if os.path.exists(trailer_dir) and os.listdir(trailer_dir):
-                trailers = ut.trailer_pull(movie["tmdbId"], "movie")
-                if len(trailers) == 0:
-                    continue
-                ut.trailer_download(
-                    ut.check_existing_trailer(trailers, os.listdir(trailer_dir)), movie
-                )
-            else:
-                # If trailer_dir doesn't exist or is empty, move to the next movie
-                ut.log(
-                    ut.RED,
-                    "\t -> SCAN",
-                    "{title} ({year}) has no trailer folder or trailers.",
-                    title=movie["title"],
-                    year=movie["year"],
-                )
-                continue
-        ut.log(ut.BLUE, "\t", "{cmd}", cmd="--------------------------------")
-
-    ut.log(ut.WHITE, "[ RADARR ]", "Movie trailer finder ended.")
+    logger.info("[ RADARR ]", "Movie trailer finder ended.")
+    logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")

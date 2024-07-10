@@ -3,6 +3,8 @@ services:
   trailer-finder:
     image: ldfe/trailer-finder:latest
     restart: always
+    security_opt:
+      - no-new-privileges:true
     volumes:
       - ./config.yaml:./config/config.yaml # Where the config file will be located
       # the access path must correspond to those of radarr and sonarr

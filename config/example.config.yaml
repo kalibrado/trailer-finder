@@ -10,7 +10,7 @@ radarr_api: "your_radarr_api_key" # Radarr API key
 tmdb_api: "your_tmdb_api_key" # TMDB API key
 
 # Output directory for trailers
-output_dirs: "backdrops" # Directory for storing trailers
+dir_backdrops: "backdrops" # Directory for storing trailers
 
 # Base URL for YouTube links
 yt_link_base: "https://www.youtube.com/watch?v=" # Base URL for YouTube links
@@ -46,3 +46,5 @@ default_locale: en # Default language for translation (e.g., en for English)
 
 # Default language for trailers
 default_language_trailer: en-EN # Default language for trailers (e.g., en-EN for English)
+
+quiet_mode: False
