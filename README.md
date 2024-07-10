@@ -28,4 +28,4 @@ To learn how to contribute to Trailer Finder, refer to [this document](./doc/con
 
 If you encounter any issues or have questions, feel free to open an issue on the [GitHub repository](https://github.com/kalibrado/trailer-finder/issues).
 
-[!["Buy Me A Beer"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/leonardofod){:target="_blank"}
+[!["Buy Me A Beer"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/leonardofod)
