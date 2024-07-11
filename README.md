@@ -1,31 +1,41 @@
+
 # Trailer Finder
 
-**Trailer Finder** is a tool that automatically searches and downloads movie trailers for your media collection. It integrates with media management tools like Radarr and Sonarr to keep your trailers up-to-date.
+## Introduction
 
-## Features
+Trailer Finder is a versatile automation tool designed to streamline the process of searching and downloading movie and TV show trailers. Built on Python, it integrates seamlessly with Radarr and Sonarr APIs, leveraging TMDB (The Movie Database) for trailer information and yt-dlp for YouTube trailer downloads. Whether you're a movie enthusiast or managing a media library, Trailer Finder offers configurable options to enhance your trailer collection effortlessly.
 
-- Automatically download trailers for your movie collection.
-- Integrates with Radarr and Sonarr.
-- Supports international languages for UI messages and notifications.
-- Configurable via a simple YAML file.
-- Can be run locally or with Docker.
+---
 
-## Usage
+## Key Features
 
-### Local Usage
+- **Automated Trailer Downloads**: Fetch trailers automatically using keywords and API integrations.
+- **Customizable Configuration**: Tailor settings such as trailer search keywords, download criteria, and output directories.
+- **Multilingual Support**: Choose your preferred language for trailer downloads and interface logs.
+- **Error Handling**: Robust error management ensures reliability during API interactions and downloads.
+- **Integration with Radarr and Sonarr**: Seamlessly integrates with these platforms for enhanced trailer management.
+- **Docker Support**: Run in isolated environments using Docker or Docker Compose.
 
-For detailed instructions on running Trailer Finder locally, refer to [this document](./doc/local-usage.md).
+---
 
-### Docker Usage
+## Documentation
 
-For detailed instructions on running Trailer Finder using Docker, refer to [this document](./doc/docker-usage.md).
+For detailed documentation, including setup instructions and configuration options, please refer to the documentation files:
 
-### Contributing
+- [English Documentation](./doc/README.en.md)
+- [Documentation Française](./doc/README.fr.md)
 
-To learn how to contribute to Trailer Finder, refer to [this document](./doc/contributing.md).
+---
 
-## Support
+## Troubleshooting
 
-If you encounter any issues or have questions, feel free to open an issue on the [GitHub repository](https://github.com/kalibrado/trailer-finder/issues).
+If you encounter issues, refer to the troubleshooting section in the documentation or [open an issue](https://github.com/kalibrado/trailer-finder/issues).
+
+---
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
+---
 
 [!["Buy Me A Beer"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/leonardofod)

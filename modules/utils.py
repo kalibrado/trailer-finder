@@ -1,4 +1,8 @@
-""" modules/utils.py """
+"""
+modules/utils.py
+
+Utility functions for handling various tasks like space checking, trailer pulling, and downloading.
+"""
 
 import os
 import shutil
@@ -15,6 +19,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Utils:
     def __init__(self, logger: Logger, config: list) -> None:
+        """
+        Initialize Utils class with a logger and configuration.
+
+        :param logger: Logger instance for logging messages
+        :param config: Configuration dictionary or list
+        """
         self.logger = logger
         self.config = config
 
@@ -39,6 +49,7 @@ class Utils:
         :param parent_mode: Flag for parent mode retrieval (TV)
         :return: List of cleaned trailer information
         """
+        # Log the process of getting trailer information
         self.logger.info(
             "\t\t -> GET",
             "Getting information about {tmdb_id} {item_type}",
@@ -48,11 +59,14 @@ class Utils:
         base_link = "api.themoviedb.org/3"
         api_key = self.config["tmdb_api"]
 
+        # Construct the URL for TMDB API based on item type and TMDB ID
         url = f"https://{base_link}/{item_type}/{tmdb_id}/videos"
         if parent_mode:
             url = f"https://{base_link}/find/{tmdb_id}?external_source=imdb_id"
 
         headers = {"accept": "application/json"}
+        
+        # Make a GET request to TMDB API
         response = requests.get(
             url,
             params={
@@ -63,6 +77,8 @@ class Utils:
             timeout=3000,
             verify=False,
         )
+        
+        # Process the response from TMDB API
         if 200 >= response.status_code <= 300:
             raw_trailers = response.json()
             clean_trailers = raw_trailers.get(
@@ -70,6 +86,7 @@ class Utils:
             )
 
             trailers = []
+            # Extract relevant trailer information from the API response
             for trailer in clean_trailers:
                 if (
                     trailer.get("type") == "Trailer"
@@ -81,6 +98,7 @@ class Utils:
 
             return trailers if len(trailers) > 0 else clean_trailers
 
+        # Handle warnings if the response status code is not in the 200-300 range
         self.logger.warning(
             "[ TMDB ]",
             "{msg_gen}",
@@ -95,6 +113,7 @@ class Utils:
         :param files: List of downloaded files
         :param item_path: Path to the item's directory
         """
+        # Log the process of post-processing downloaded files
         self.logger.info(
             "\t\t -> POST PROCESS",
             "Create '{path}' folder",
@@ -103,6 +122,7 @@ class Utils:
         output_path = os.path.join(item_path, self.config["dir_backdrops"])
         os.makedirs(output_path, exist_ok=True)
 
+        # Iterate through each downloaded file and perform FFMPEG processing
         for file in files:
             filename = os.path.splitext(os.path.basename(file))[0]
             filetype = self.config["filetype"]
@@ -125,7 +145,9 @@ class Utils:
                 "-y",
                 f"{output_path}/{filename}.{filetype}",
             ]
+            # Log the FFMPEG command used for processing
             self.logger.info("\t\t -> FFMPEG", "{msg_gen}", msg_gen=" ".join(msg_gen))
+            # Execute the FFMPEG command with subprocess
             if self.config["quiet_mode"]:
                 with open(os.devnull, "wb") as output:
                     subprocess.run(
@@ -143,6 +165,7 @@ class Utils:
         """
         ydl = yt_dlp.YoutubeDL(ytdl_opts)
         try:
+            # Log the process of downloading the trailer using yt-dlp
             self.logger.info(
                 "\t\t -> DOWNLOAD",
                 "Downloading {title} trailer from {link}",
@@ -151,6 +174,7 @@ class Utils:
             )
             ydl.download([link["yt_link"]])
         except yt_dlp.DownloadError as e:
+            # Handle yt-dlp download errors and log them
             self.logger.error(
                 "\t\t -> DOWNLOAD",
                 "Failed to download from {link}: {error}",
@@ -158,6 +182,7 @@ class Utils:
                 error=e,
             )
         except ValueError as e:
+            # Handle invalid value errors during yt-dlp download and log them
             self.logger.error(
                 "\t\t -> DOWNLOAD",
                 "Invalid duration for {link}: {error}",
@@ -176,6 +201,7 @@ class Utils:
         os.makedirs(cache_path, exist_ok=True)
 
         def dl_progress(d):
+            # Define a download progress function to handle yt-dlp progress hooks
             if d["status"] == "finished":
                 self.logger.success("\t\t -> DOWNLOAD", "Trailer downloaded.")
             elif d["status"] == "error":
@@ -211,6 +237,7 @@ class Utils:
             ]
 
         def check_duration(link: str, **info: any) -> Exception:
+            # Define a duration check function for trailers
             duration = info.get("duration")
             max_length = self.config["max_length"]
             if duration and (int(duration) > int(max_length)):
@@ -279,6 +306,7 @@ class Utils:
         :return: List of trailers that need to be downloaded
         """
         new_download = []
+        # Compare new trailers with existing ones and determine which ones need to be downloaded
         for trailer in trailers:
             if trailer["name"] not in existing_trailers:
                 new_download.append(trailer)
