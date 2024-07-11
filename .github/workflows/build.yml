@@ -1,14 +1,11 @@
-name: Publish Docker image develop
+name: Publish Docker image
 
 on:
   pull_request:
     branches:
       - main
-      - develop
     types:
       - closed
-env:
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   docker:
@@ -37,4 +34,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.BRANCH_NAME }}
+          tags: latest
