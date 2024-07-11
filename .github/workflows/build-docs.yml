@@ -27,10 +27,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install sphinx
 
-      - name: Get version
-        id: meta
-        run: echo ::set-output name=tags::$(git describe --tags --abbrev=0 2>/dev/null || echo "no-tag")
-
       - name: Setup Sphinx documentation
         run: |
           mkdir -p docs
