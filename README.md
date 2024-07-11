@@ -22,66 +22,14 @@ Trailer Finder is a versatile automation tool designed to streamline the process
 
 For detailed documentation, including setup instructions and configuration options, please refer to the documentation files:
 
-- English Documentation: [./doc/README.en.md](./doc/README.en.md)
-- Documentation Française : [./doc/README.fr.md](./doc/README.fr.md)
+- [English Documentation](./doc/README.en.md)
+- [Documentation Française](./doc/README.fr.md)
 
----
-
-## Getting Started
-
-### Prerequisites
-
-Ensure you have the following installed:
-
-- Python 3.7+
-- `pip` (Python package manager)
-- API keys for TMDB, Radarr, and Sonarr
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/trailer-finder.git
-   cd trailer-finder
-   ```
-
-2. Set up a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Configure your `config.yaml` file with API keys and settings. Use [./config.sample.yaml](./config.sample.yaml) as a template.
-
-### Usage
-
-Run Trailer Finder:
-```bash
-python main.py
-```
-
-### Docker
-
-For Docker usage, refer to the Docker section in the respective language documentation:
-
-- English: [./doc/README.en.md](./doc/README.en.md#docker)
-- Français: [./doc/README.fr.md](./doc/README.fr.md#docker)
-
----
-
-## Contributions
-
-Contributions are welcome! Please follow the  [contribution guidelines](./doc/CONTRIBUTING.en.md) or [le guide pour contribuer](./doc/CONTRIBUTING.fr.md)
 ---
 
 ## Troubleshooting
 
-If you encounter issues, refer to the troubleshooting section in the documentation or [open an issue](https://github.com/yourusername/trailer-finder/issues).
+If you encounter issues, refer to the troubleshooting section in the documentation or [open an issue](https://github.com/kalibrado/trailer-finder/issues).
 
 ---
 

@@ -22,6 +22,22 @@ Trailer Finder est un outil d'automatisation basé sur Python conçu pour recher
   - [5. **Module Utils**](#5-module-utils)
 - [Gestion des Erreurs](#gestion-des-erreurs)
 - [Contributions](#contributions)
+  - [Moyens de Contribuer](#moyens-de-contribuer)
+  - [Pour Commencer](#pour-commencer)
+    - [1. Forkez le Dépôt](#1-forkez-le-dépôt)
+    - [2. Clonez le Dépôt](#2-clonez-le-dépôt)
+    - [3. Créez une Nouvelle Branche](#3-créez-une-nouvelle-branche)
+    - [4. Effectuez les Modifications](#4-effectuez-les-modifications)
+    - [5. Testez Vos Modifications](#5-testez-vos-modifications)
+    - [6. Faites un Commit de Vos Modifications](#6-faites-un-commit-de-vos-modifications)
+    - [7. Poussez Vos Modifications](#7-poussez-vos-modifications)
+    - [8. Créez une Pull Request](#8-créez-une-pull-request)
+    - [9. Décrivez Votre Pull Request](#9-décrivez-votre-pull-request)
+    - [10. Revue et Discussion](#10-revue-et-discussion)
+    - [11. Fusionnez Votre Pull Request](#11-fusionnez-votre-pull-request)
+  - [Style de Code](#style-de-code)
+  - [Signaler des Problèmes](#signaler-des-problèmes)
+  - [Remerciements](#remerciements)
 - [Docker](#docker)
 
 ---
@@ -38,7 +54,7 @@ Pour exécuter Trailer Finder sans Docker, assurez-vous d'avoir les prérequis s
 2. **Étapes d'Installation**:
    - Clonez le dépôt GitHub :
      ```bash
-     git clone https://github.com/yourusername/trailer-finder.git
+     git clone https://github.com/kalibrado/trailer-finder.git
      cd trailer-finder
      ```
 
@@ -172,13 +188,98 @@ quiet_mode: False
 
 ### Contributions
 
-Les contributions sont les bienvenues ! Suivez ces étapes pour contribuer :
+Merci de considérer contribuer à Trailer Finder ! Ce document décrit les lignes directrices et les étapes pour contribuer au projet.
 
-1. Forker le dépôt.
-2. Créer une nouvelle branche (`git checkout -b feature/votre-feature`).
-3. Commiter vos modifications (`git commit -am 'Ajouter une fonctionnalité'`).
-4. Pousser la branche (`git push origin feature/votre-feature`).
-5. Créer une nouvelle Pull Request.
+#### Moyens de Contribuer
+
+Vous pouvez contribuer à Trailer Finder de plusieurs manières, notamment :
+
+- Signaler des bugs
+- Demander de nouvelles fonctionnalités
+- Corriger des bugs
+- Implémenter de nouvelles fonctionnalités
+- Améliorer la documentation
+- Fournir des traductions
+
+#### Pour Commencer
+
+Pour commencer à contribuer, suivez ces étapes :
+
+##### 1. Forkez le Dépôt
+
+Tout d'abord, forkez le dépôt Trailer Finder sur votre compte GitHub en cliquant sur le bouton "Fork" sur la page du dépôt.
+
+##### 2. Clonez le Dépôt
+
+Clonez votre fork du dépôt sur votre machine locale :
+
+```bash
+git clone https://github.com/kalibrado/trailer-finder.git
+cd trailer-finder
+```
+
+##### 3. Créez une Nouvelle Branche
+
+Créez une nouvelle branche pour votre contribution :
+
+```bash
+git checkout -b feature/votre-feature
+```
+
+##### 4. Effectuez les Modifications
+
+Effectuez vos modifications ou ajouts au code. Assurez-vous que vos modifications respectent le style de codage et les lignes directrices utilisés dans le projet.
+
+##### 5. Testez Vos Modifications
+
+Testez vos modifications en profondeur pour vous assurer qu'elles fonctionnent comme prévu. Si vous avez ajouté de nouvelles fonctionnalités ou corrigé des bugs, écrivez des tests pour couvrir votre code.
+
+##### 6. Faites un Commit de Vos Modifications
+
+Une fois satisfait de vos modifications, faites un commit avec un message clair et descriptif :
+
+```bash
+git commit -am 'Ajouter une fonctionnalité/amélioration'
+```
+
+##### 7. Poussez Vos Modifications
+
+Poussez vos modifications vers votre dépôt forké sur GitHub :
+
+```bash
+git push origin feature/votre-feature
+```
+
+##### 8. Créez une Pull Request
+
+Allez sur la page GitHub du dépôt Trailer Finder. Vous devriez voir une invite pour créer une pull request pour la branche que vous venez de pousser. Cliquez sur "Compare & pull request" pour initier la pull request.
+
+##### 9. Décrivez Votre Pull Request
+
+Fournissez une description claire de vos changements dans la pull request. Incluez tous les détails pertinents sur les modifications apportées et pourquoi elles sont bénéfiques.
+
+##### 10. Revue et Discussion
+
+Collaborez avec les mainteneurs et les contributeurs à travers les revues de code et les discussions. Soyez réactif aux retours et préparez-vous à apporter d'autres modifications si nécessaire.
+
+##### 11. Fusionnez Votre Pull Request
+
+Une fois votre pull request approuvée et toutes les discussions résolues, un mainteneur du projet fusionnera vos changements dans la branche principale.
+
+#### Style de Code
+
+Suivez le style de code et les conventions existantes utilisés dans le projet. Cela inclut :
+
+- Python : Guide de style PEP 8
+- Documentation : Utilisez le format Markdown (.md) avec des explications claires et concises
+
+#### Signaler des Problèmes
+
+Si vous rencontrez des bugs, des problèmes ou avez des suggestions d'améliorations, veuillez [ouvrir une issue](https://github.com/kalibrado/trailer-finder/issues).
+
+#### Remerciements
+
+Nous apprécions toutes les contributions à Trailer Finder, grandes ou petites ! Merci de nous aider à rendre ce projet meilleur.
 
 ---
 
