@@ -12,15 +12,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.x" # Remplacez par votre version de Python
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
@@ -29,13 +28,22 @@ jobs:
 
       - name: Setup Sphinx documentation
         run: |
-          mkdir -p docs
+          mkdir -p docs _site
           cd docs
           sphinx-quickstart -q -p "Trailer Finder" -a "Kalibrado" -v "${{ steps.meta.outputs.tags || github.head_ref || github.ref_name }}"
           make html
+          cd ..
+          mv ./docs/_build/html _site
 
+      - name: Upload artifact
+        # Automatically uploads an artifact from the './_site' directory by default
+        uses: actions/upload-pages-artifact@v3
+
+  # Deployment job
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_build/html
+        id: deployment
+        uses: actions/deploy-pages@v4
