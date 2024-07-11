@@ -1,4 +1,7 @@
 # Trailer Finder
+[![Semgrep](https://github.com/kalibrado/trailer-finder/actions/workflows/semgrep.yml/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/semgrep.yml)
+[![Dependabot Updates](https://github.com/kalibrado/trailer-finder/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/dependabot/dependabot-updates)
+[![CodeQL](https://github.com/kalibrado/trailer-finder/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/github-code-scanning/codeql)
 
 **Trailer Finder** is a tool that automatically searches and downloads movie trailers for your media collection. It integrates with media management tools like Radarr and Sonarr to keep your trailers up-to-date.
 

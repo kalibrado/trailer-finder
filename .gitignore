@@ -1,6 +1,6 @@
 .venv
 *.pyc
-config/config.yml
+config/config.yaml
 */__pycache__/
 cache/*
 .idea/
