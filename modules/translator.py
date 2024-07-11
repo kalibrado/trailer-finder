@@ -1,70 +1,60 @@
-"""
-modules/translator.py
-
-This module provides a Translator class for handling translation functionality
-based on locale-specific JSON files.
-"""
+""" modules/translator.py """
 
 import os
-import json
+import yaml
 
 
 class Translator:
     """
-    Main Class to set, find and load tranlate json.
+    Translator class to handle language translations.
+
+    Attributes:
+        default_locale (str): The default language locale.
     """
-    def __init__(self, default_locale):
+
+    def __init__(self, default_locale="en"):
         """
-        Initialize the Translator object with a default locale.
+        Initializes the Translator with a default locale and loads translation files.
 
-        :param default_locale: Default locale to use for translations
+        Args:
+            default_locale (str): The default language locale. Default is 'en'.
         """
-        self.locales_dir = "locales"
-        self.locale = default_locale
-        self.translations = {}
-        self.load_translations(self.locale)
+        self.default_locale = default_locale
+        self.translations = self._load_translations()
 
-    def load_translations(self, locale):
+    def _load_translations(self):
         """
-        Load translations from a JSON file based on the specified locale.
+        Loads translation files from the 'locales' directory.
 
-        :param locale: Locale code to load translations for
-        :raises FileNotFoundError: If the translation file for the locale is not found
+        Returns:
+            dict: A dictionary of translations for each supported locale.
         """
-        file_path = os.path.join(self.locales_dir, f"{locale}.json")
+        translations = {}
+        locales_dir = "locales"
+        for filename in os.listdir(locales_dir):
+            if filename.endswith(".yaml"):
+                locale = filename[:-5]
+                with open(
+                    os.path.join(locales_dir, filename), "r", encoding="utf-8"
+                ) as f:
+                    translations[locale] = yaml.safe_load(f)
+        return translations
 
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Translation file '{file_path}' not found.")
-
-        with open(file_path, "r", encoding="utf-8") as f:
-            self.translations = json.load(f)
-
-    def set_locale(self, locale):
+    def translate(self, msg_key, **kwargs):
         """
-        Set the current locale and reload translations for the new locale.
+        Translates a message key to the appropriate language string.
 
-        :param locale: New locale to set
+        Args:
+            msg_key (str): The key for the message to translate.
+            **kwargs: Additional arguments to format the translated message.
+
+        Returns:
+            str: The translated and formatted message string.
         """
-        self.locale = locale
-        self.load_translations(locale)
-
-    def translate(self, key, **kwargs):
-        """
-        Translate a key to the current locale's language.
-
-        :param key: Key to lookup in translations
-        :param kwargs: Optional keyword arguments for string formatting
-        :return: Translated text or error message if translation key is missing or formatting fails
-        """
-        # Retrieve the translation or None if the key doesn't exist
-        text = self.translations.get(key)
-        if text is None:
-            # Default error message
-            text = f"An error occurred: Missing translation for key '{key}'"
-
+        msg_template = self.translations.get(self.default_locale, {}).get(
+            msg_key, msg_key
+        )
         try:
-            # Attempt to format the string with provided arguments
-            return text.format(**kwargs)
-        except KeyError as e:
-            # Handle case where a key necessary for formatting doesn't exist
-            return f"An error occurred: Error formatting translation for key '{key}': missing key {e}"
+            return msg_template.format(**kwargs)
+        except KeyError:
+            return msg_key

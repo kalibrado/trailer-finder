@@ -1,11 +1,9 @@
-name: Publish Docker image
+name: Publish new version in Docker
 
 on:
   release:
     types: [published]
-  push:
-    tags:
-      - "v*"
+
 jobs:
   push_to_registries:
     name: Push Docker image to multiple registries
@@ -37,7 +35,7 @@ jobs:
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: |
-            ldfe/finder-trailer
+            ldfe/trailer-finder
             ghcr.io/${{ github.repository }}
 
       - name: Build and push Docker images
@@ -47,10 +45,3 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ github.repository }}/${{ steps.meta.outputs.tags }}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
