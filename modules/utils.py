@@ -8,10 +8,10 @@ import os
 import shutil
 import subprocess
 import re
+from datetime import datetime, timezone
 import requests
 import yt_dlp
 import urllib3
-from datetime import datetime, timezone
 from modules.logger import Logger
 
 # Disable SSL warnings
@@ -82,13 +82,13 @@ class Utils:
         # Process the response from TMDB API
         if 200 >= response.status_code <= 300:
             raw_trailers = response.json()
-            clean_trailers = raw_trailers.get(
-                "tv_results" if parent_mode else "results", []
-            )
+            if parent_mode:
+                return raw_trailers.get("tv_results", [])
 
+            raw_trailers = raw_trailers.get("results", [])
             trailers = []
             # Extract relevant trailer information from the API response
-            for trailer in clean_trailers:
+            for trailer in raw_trailers:
                 if (
                     trailer.get("official") == self.config["TMDB_official"]
                     and trailer.get("type") in self.config["TMDB_type_of_trailler"]
@@ -103,15 +103,12 @@ class Utils:
                     ).replace(tzinfo=timezone.utc)
                     trailers.append(trailer)
 
-            # fix: Handle case where no trailers are found to enforce manual search in a specific YouTube channel list
-            trailers = trailers if len(trailers) > 0 else clean_trailers
-
             # Sort the list based on the proximity to the current datetime
-            sorted_trailers = sorted(
+            trailers = sorted(
                 trailers,
                 key=lambda x: abs(datetime.now(timezone.utc) - x["published_at"]),
             )
-            return sorted_trailers
+            return trailers
 
         # Handle warnings if the response status code is not in the 200-300 range
         self.logger.warning(
@@ -119,8 +116,9 @@ class Utils:
             "{msg_gen}",
             msg_gen=f"{response.status_code} - {response.json()['status_message']}",
         )
+        return []
 
-    def post_process(self, cache_path: str, files: str, item_path: str) -> None:
+    def post_process(self, cache_path: str, files: str, item: dict) -> None:
         """
         Post-processing function for downloaded files using FFMPEG.
 
@@ -128,14 +126,15 @@ class Utils:
         :param files: List of downloaded files
         :param item_path: Path to the item's directory
         """
+
         # Log the process of post-processing downloaded files
         self.logger.info(
             "\t\t -> POST PROCESS",
             "Create '{path}' folder",
-            path=f"{item_path}/{self.config['dir_backdrops']}",
+            path=item["outputs_folder"],
         )
-        output_path = os.path.join(item_path, self.config["dir_backdrops"])
-        os.makedirs(output_path, exist_ok=True)
+
+        os.makedirs(item["outputs_folder"], exist_ok=True)
 
         # Iterate through each downloaded file and perform FFMPEG processing
         for file in files:
@@ -158,7 +157,7 @@ class Utils:
                 "-preset",
                 "slow",
                 "-y",
-                f"{output_path}/{filename}.{filetype}",
+                f"{item['outputs_folder']}/{filename}.{filetype}",
             ]
             # Log the FFMPEG command used for processing
             self.logger.info("\t\t -> FFMPEG", "{msg_gen}", msg_gen=" ".join(msg_gen))
@@ -229,7 +228,7 @@ class Utils:
             "password": self.config["auth_yt_pass"],
             "no_warnings": self.config["no_warnings"],
             "outtmpl": f'{cache_path}/{item["sortTitle"]}',
-            "sleep_interval_requests": 600,
+            "sleep_interval_requests": self.config['YT_DLP_sleep_interval_requests'],
         }
         if self.config.get("quiet_mode", False):
             ytdl_opts["quiet"] = True
@@ -240,49 +239,39 @@ class Utils:
                 {"key": "SponsorBlock"},
                 {
                     "key": "ModifyChapters",
-                    "remove_sponsor_segments": [
-                        "sponsor",
-                        "intro",
-                        "outro",
-                        "selfpromo",
-                        "preview",
-                        "filler",
-                        "interaction",
+                    "remove_sponsor_segments": self.config[
+                        "YT_DLP_remove_spensors_block"
                     ],
                 },
             ]
 
-        def check_duration(link: str, **info: any) -> Exception:
+        def check_duration(i: dict, **info: any) -> Exception:
             # Define a duration check function for trailers
             duration = info.get("duration")
             max_length = self.config["max_length"]
             if duration and (int(duration) > int(max_length)):
                 raise ValueError(
                     "Invalid duration for {link}: {error}".format(
-                        link=link["name"], error=f"{duration}s"
+                        link=i["name"], error=f"{duration}s"
                     )
                 )
 
-        if self.config["only_one_trailer"]:
+        for link in links:
+            if self.config["only_one_trailer"] and len(os.listdir(cache_path)) == 1:
+                continue
             if self.config["max_length"]:
-                ytdl_opts["match_filter"] = lambda info: check_duration(
-                    links[0], **info
-                )
-            ytdl_opts["outtmpl"] = f"{cache_path}/{links[0]['name']}"
-            self.yt_dlp_process(links[0], ytdl_opts)
-        else:
-            for link in links:
-                if self.config["max_length"]:
-                    ytdl_opts["match_filter"] = lambda info: check_duration(
-                        link, **info
-                    )
+                ytdl_opts["match_filter"] = lambda info: check_duration(link, **info)
+            try:
                 ytdl_opts["outtmpl"] = f"{cache_path}/{link['name']}"
                 self.yt_dlp_process(link, ytdl_opts)
+            except Exception as e:
+                self.logger.info(f"fail to download {link} {e}")
+                continue
 
         if os.path.exists(cache_path):
             files = os.listdir(cache_path)
             if len(files) > 0:
-                self.post_process(cache_path, files, item["path"])
+                self.post_process(cache_path, files, item)
             shutil.rmtree(cache_path)
         else:
             self.logger.error(

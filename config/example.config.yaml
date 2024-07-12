@@ -9,9 +9,6 @@ radarr_api: "your_radarr_api_key" # Radarr API key
 # TMDB API key (The Movie Database)
 tmdb_api: "your_tmdb_api_key" # TMDB API key
 
-# Output directory for trailers
-dir_backdrops: "backdrops" # Directory for storing trailers
-
 # Base URL for YouTube links
 yt_link_base: "https://www.youtube.com/watch?v=" # Base URL for YouTube links
 
@@ -54,3 +51,10 @@ TMDB_official: True
 TMDB_size: 1080 # default size
 TMDB_source: "YouTube" # onlya avalide youtube source for another in coming son
 
+dir_backdrops: "backdrops" # This is the default value for trailer, e.g., /path/of/movie/Movie Name/backdrops/
+custom_path: "" # Set this if you want to save trailers in a specific path
+custom_name_tv_show: "TV Show Trailer" # This is valid only if custom_path is set
+custom_name_movie: "Movies Trailers" # This is valid only if custom_path is set
+
+YT_DLP_sleep_interval_requests: 0 # Set this for waiting yt_dlp process
+YT_DLP_remove_sponsors_block: '["sponsor", "intro", "outro", "selfpromo", "preview", "filler", "interaction"]' # Set this to remove specified segments from the trailer using yt_dlp
