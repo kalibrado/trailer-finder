@@ -37,8 +37,8 @@ If you encounter issues, refer to the troubleshooting section in the documentati
 ---
 
 ## License
+ This project is licensed under the [MIT License](./LICENSE).
 
-This project is licensed under the [MIT License](./LICENSE).
 ---
 
 [!["Buy Me A Beer"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/leonardofod)
