@@ -77,6 +77,7 @@ def main():
             time = config["sleep_time"]
             logger.info("[ MAIN ]", "Waiting for {hours} hours.", hours=time)
             sleep(time * 3600)
+            os.system("clear")
 
 
 if __name__ == "__main__":
