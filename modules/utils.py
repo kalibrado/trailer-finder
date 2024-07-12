@@ -228,7 +228,7 @@ class Utils:
             "password": self.config["auth_yt_pass"],
             "no_warnings": self.config["no_warnings"],
             "outtmpl": f'{cache_path}/{item["sortTitle"]}',
-            "sleep_interval_requests": self.config['YT_DLP_sleep_interval_requests'],
+            "sleep_interval_requests": self.config["YT_DLP_sleep_interval_requests"],
         }
         if self.config.get("quiet_mode", False):
             ytdl_opts["quiet"] = True
@@ -239,8 +239,14 @@ class Utils:
                 {"key": "SponsorBlock"},
                 {
                     "key": "ModifyChapters",
-                    "remove_sponsor_segments": self.config[
-                        "YT_DLP_remove_spensors_block"
+                    "remove_sponsor_segments": [
+                        "sponsor",
+                        "intro",
+                        "outro",
+                        "selfpromo",
+                        "preview",
+                        "filler",
+                        "interaction",
                     ],
                 },
             ]
