@@ -13,31 +13,38 @@ def sonarr(logger, config, utils: Utils):
     """
     Main function to find and download trailers for TV series using Sonarr API.
     """
-    sonarr_api = SonarrAPI(config["sonarr_host"], config["sonarr_api"])  # Initialize Sonarr API
+
+    if config["sonarr_host"] is None or config["sonarr_api"] is None:
+        return
+
+    # Initialize Sonarr API
+    sonarr_api = SonarrAPI(config["sonarr_host"], config["sonarr_api"])
+
     logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
     logger.info("[ SONARR ]", "Show trailer finder started.")
 
     # Iterate through all TV series in Sonarr
     for show in sonarr_api.get_series():
-        dir_backdrops = os.path.join(
-            show["path"], config["dir_backdrops"]
-        )  # Path to store trailers
+        # Path to store trailers
+        show["outputs_folder"] = os.path.join(show["path"], config["dir_backdrops"])
 
-        if not os.path.exists(dir_backdrops):  # Skip if directory doesn't exist
-            continue
+        # create folder in custom path using name cache folder
+        if config["custom_path"]:
+            show["outputs_folder"] = os.path.join(
+                config["custom_path"], config["custom_name_tv_show"], show["title"]
+            )
 
-        if show["statistics"]["sizeOnDisk"] == 0:  # Skip if show is not downloaded
-            continue
+        # create ooutputs folder if not exist
+        os.makedirs(show["outputs_folder"], exist_ok=True)
 
-        if not utils.check_space(show["path"]):  # Skip if not enough space
+        if not utils.check_space(show["outputs_folder"]):  # Skip if not enough space
             continue
 
         logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
-        trailer_count = len(os.listdir(dir_backdrops))
+        trailer_count = len(os.listdir(show["outputs_folder"]))
 
-        if (
-            config["only_one_trailer"] and trailer_count >= 1
-        ):  # Skip if trailer already exists
+        # Skip if trailer already exists
+        if config["only_one_trailer"] and trailer_count >= 1:
             logger.success(
                 "\t\t ->",
                 "{title} ({year}) already has {count} trailers.",
@@ -55,8 +62,9 @@ def sonarr(logger, config, utils: Utils):
         )
 
         # Fetch trailers using IMDb ID
-        episodes = utils.trailer_pull(show["imdbId"], "tv", parent_mode=True)
-        if len(episodes) == 0:  # No trailers found
+        tv_show_pack = utils.trailer_pull(show["imdbId"], "tv", parent_mode=True)
+        # No trailers found
+        if len(tv_show_pack) == 0:
             logger.warning(
                 "\t\t ->",
                 "No trailer is available for {title} ({year})",
@@ -66,9 +74,11 @@ def sonarr(logger, config, utils: Utils):
             continue
 
         # Download trailers for each episode
-        for episode in episodes:
-            episode_trailers = utils.trailer_pull(episode["id"], "tv")
-            if len(episode_trailers) == 0:  # No trailers found for episode
+        for season in tv_show_pack:
+            season_trailers = utils.trailer_pull(season["id"], "tv")
+            # No trailers found for episode
+            # fix :add here youtube search keyword
+            if len(season_trailers) == 0:
                 logger.warning(
                     "\t\t ->",
                     "No trailer is available for {title} ({year})",
@@ -77,7 +87,7 @@ def sonarr(logger, config, utils: Utils):
                 )
                 continue
 
-            utils.trailer_download(episode_trailers, show)
+            utils.trailer_download(season_trailers, show)
 
     logger.info("[ SONARR ]", "Show trailer finder ended.")
     logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")

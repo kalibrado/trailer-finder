@@ -14,26 +14,34 @@ def radarr(logger: Logger, config: list, utils: Utils):
     """
     Main function to find and download trailers for movies using the Radarr API.
     """
-    radarr_api = RadarrAPI(
-        config["radarr_host"], config["radarr_api"]
-    )  # Initialize Radarr API
+
+    if config["radarr_host"] is None or config["radarr_api"] is None:
+        return
+
+    # Initialize Radarr API
+    radarr_api = RadarrAPI(config["radarr_host"], config["radarr_api"])
+
     logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
     logger.info("[ RADARR ]", "Movie trailer finder started.")
 
     # Iterate through all movies in Radarr
     for movie in radarr_api.get_movie():
-        dir_backdrops = os.path.join(
-            movie["path"], config["dir_backdrops"]
-        )  # Path to store trailers
-        if not os.path.exists(dir_backdrops):  # Skip if directory doesn't exist
-            continue
-        if movie["sizeOnDisk"] == 0:  # Skip if movie is not downloaded
-            continue
-        if not utils.check_space(movie["path"]):  # Skip if not enough space
+        movie["outputs_folder"] = os.path.join(movie["path"], config["dir_backdrops"])
+
+        # create folder in custom path using name cache folder
+        if config["custom_path"]:
+            movie["outputs_folder"] = os.path.join(
+                config["custom_path"], config["custom_name_movie"], movie["title"]
+            )
+
+        # create ooutputs folder if not exist
+        os.makedirs(movie["outputs_folder"], exist_ok=True)
+
+        if not utils.check_space(movie["outputs_folder"]):  # Skip if not enough space
             continue
 
         logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
-        trailer_count = len(os.listdir(dir_backdrops))
+        trailer_count = len(os.listdir(movie["outputs_folder"]))
         if (
             config["only_one_trailer"] and trailer_count >= 1
         ):  # Skip if trailer already exists
@@ -55,7 +63,9 @@ def radarr(logger: Logger, config: list, utils: Utils):
 
         # Fetch trailers using TMDB ID
         trailers = utils.trailer_pull(movie["tmdbId"], "movie")
-        if len(trailers) == 0:  # No trailers found
+        # No trailers found
+        # fix :add here youtube search keyword
+        if len(trailers) == 0:
             logger.warning(
                 "\t ->",
                 "No trailer is available for {title} ({year})",
@@ -64,11 +74,11 @@ def radarr(logger: Logger, config: list, utils: Utils):
             )
             continue
 
-        # Download trailers
-        utils.trailer_download(
-            utils.check_existing_trailer(trailers, os.listdir(dir_backdrops)),
-            movie,
+        list_of_trailers = utils.check_existing_trailer(
+            trailers, os.listdir(movie["outputs_folder"])
         )
+
+        utils.trailer_download(list_of_trailers, movie)
 
     logger.info("[ RADARR ]", "Movie trailer finder ended.")
     logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
