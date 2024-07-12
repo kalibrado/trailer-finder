@@ -11,6 +11,7 @@ import re
 import requests
 import yt_dlp
 import urllib3
+from datetime import datetime, timezone
 from modules.logger import Logger
 
 # Disable SSL warnings
@@ -65,7 +66,7 @@ class Utils:
             url = f"https://{base_link}/find/{tmdb_id}?external_source=imdb_id"
 
         headers = {"accept": "application/json"}
-        
+
         # Make a GET request to TMDB API
         response = requests.get(
             url,
@@ -77,7 +78,7 @@ class Utils:
             timeout=3000,
             verify=False,
         )
-        
+
         # Process the response from TMDB API
         if 200 >= response.status_code <= 300:
             raw_trailers = response.json()
@@ -89,14 +90,28 @@ class Utils:
             # Extract relevant trailer information from the API response
             for trailer in clean_trailers:
                 if (
-                    trailer.get("type") == "Trailer"
-                    and trailer.get("site") == "YouTube"
+                    trailer.get("official") == self.config["TMDB_official"]
+                    and trailer.get("type") in self.config["TMDB_type_of_trailler"]
+                    and trailer.get("size") == self.config["TMDB_size"]
+                    and trailer.get("site") == self.config["TMDB_source"]
                 ):
                     trailer["yt_link"] = self.config["yt_link_base"] + trailer["key"]
                     trailer["name"] = self.replace_slash_backslash(trailer["name"])
+                    # Parse the published_at string to a datetime object with UTC timezone
+                    trailer["published_at"] = datetime.strptime(
+                        trailer["published_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                    ).replace(tzinfo=timezone.utc)
                     trailers.append(trailer)
 
-            return trailers if len(trailers) > 0 else clean_trailers
+            # fix: Handle case where no trailers are found to enforce manual search in a specific YouTube channel list
+            trailers = trailers if len(trailers) > 0 else clean_trailers
+
+            # Sort the list based on the proximity to the current datetime
+            sorted_trailers = sorted(
+                trailers,
+                key=lambda x: abs(datetime.now(timezone.utc) - x["published_at"]),
+            )
+            return sorted_trailers
 
         # Handle warnings if the response status code is not in the 200-300 range
         self.logger.warning(
@@ -214,6 +229,7 @@ class Utils:
             "password": self.config["auth_yt_pass"],
             "no_warnings": self.config["no_warnings"],
             "outtmpl": f'{cache_path}/{item["sortTitle"]}',
+            "sleep_interval_requests": 600,
         }
         if self.config.get("quiet_mode", False):
             ytdl_opts["quiet"] = True
