@@ -32,7 +32,7 @@ class Translator:
         translations = {}
         locales_dir = "locales"
         for filename in os.listdir(locales_dir):
-            if filename.endswith(".yaml"):
+            if filename.endswith(".json"):
                 locale = filename[:-5]
                 with open(
                     os.path.join(locales_dir, filename), "r", encoding="utf-8"
