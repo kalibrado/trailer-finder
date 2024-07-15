@@ -1,4 +1,4 @@
-""" modules/translator.py """
+"""modules/translator.py"""
 
 import os
 import yaml

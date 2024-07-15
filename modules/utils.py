@@ -19,7 +19,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class Utils:
-    def __init__(self, logger: Logger, config: list) -> None:
+    def __init__(self, logger: Logger, config: dict) -> None:
         """
         Initialize Utils class with a logger and configuration.
 
@@ -118,7 +118,7 @@ class Utils:
         )
         return []
 
-    def post_process(self, cache_path: str, files: str, item: dict) -> None:
+    def post_process(self, cache_path: str, files: list, item: dict) -> None:
         """
         Post-processing function for downloaded files using FFMPEG.
 
@@ -170,7 +170,7 @@ class Utils:
             else:
                 subprocess.run(msg_gen, check=False)
 
-    def yt_dlp_process(self, link: str, ytdl_opts: dict) -> None:
+    def yt_dlp_process(self, link: [dict, list], ytdl_opts, manualSearch=False) -> None:
         """
         Download trailer using yt-dlp.
 
@@ -178,33 +178,36 @@ class Utils:
         :param ytdl_opts: Options for yt-dlp
         """
         ydl = yt_dlp.YoutubeDL(ytdl_opts)
-        try:
-            # Log the process of downloading the trailer using yt-dlp
-            self.logger.info(
-                "\t\t -> DOWNLOAD",
-                "Downloading {title} trailer from {link}",
-                title=link["name"],
-                link=link["yt_link"],
-            )
-            ydl.download([link["yt_link"]])
-        except yt_dlp.DownloadError as e:
-            # Handle yt-dlp download errors and log them
-            self.logger.error(
-                "\t\t -> DOWNLOAD",
-                "Failed to download from {link}: {error}",
-                link=link["name"],
-                error=e,
-            )
-        except ValueError as e:
-            # Handle invalid value errors during yt-dlp download and log them
-            self.logger.error(
-                "\t\t -> DOWNLOAD",
-                "Invalid duration for {link}: {error}",
-                link=link["name"],
-                error=e,
-            )
+        if manualSearch:
+            ydl.download(link)
+        else:
+            try:
+                # Log the process of downloading the trailer using yt-dlp
+                self.logger.info(
+                    "\t\t -> DOWNLOAD",
+                    "Downloading {title} trailer from {link}",
+                    title=link["name"],
+                    link=link["yt_link"],
+                )
+                ydl.download([link["yt_link"]])
+            except yt_dlp.DownloadError as e:
+                # Handle yt-dlp download errors and log them
+                self.logger.error(
+                    "\t\t -> DOWNLOAD",
+                    "Failed to download from {link}: {error}",
+                    link=link["name"],
+                    error=e,
+                )
+            except ValueError as e:
+                # Handle invalid value errors during yt-dlp download and log them
+                self.logger.error(
+                    "\t\t -> DOWNLOAD",
+                    "Invalid duration for {link}: {error}",
+                    link=link["name"],
+                    error=e,
+                )
 
-    def trailer_download(self, links: list, item: dict) -> None:
+    def trailer_download(self, links: list, item: dict, manualSearch: False) -> None:
         """
         Download trailers from YouTube.
 
@@ -230,6 +233,7 @@ class Utils:
             "outtmpl": f'{cache_path}/{item["sortTitle"]}',
             "sleep_interval_requests": self.config["YT_DLP_sleep_interval_requests"],
         }
+
         if self.config.get("quiet_mode", False):
             ytdl_opts["quiet"] = True
             ytdl_opts["noprogress"] = True
@@ -251,7 +255,7 @@ class Utils:
                 },
             ]
 
-        def check_duration(i: dict, **info: any) -> Exception:
+        def check_duration(i: dict, **info) -> [Exception, None]:
             # Define a duration check function for trailers
             duration = info.get("duration")
             max_length = self.config["max_length"]
@@ -262,17 +266,26 @@ class Utils:
                     )
                 )
 
-        for link in links:
-            if self.config["only_one_trailer"] and len(os.listdir(cache_path)) == 1:
-                continue
-            if self.config["max_length"]:
-                ytdl_opts["match_filter"] = lambda info: check_duration(link, **info)
-            try:
-                ytdl_opts["outtmpl"] = f"{cache_path}/{link['name']}"
-                self.yt_dlp_process(link, ytdl_opts)
-            except Exception as e:
-                self.logger.info(f"fail to download {link} {e}")
-                continue
+        if manualSearch:
+            search = [
+                f"ytsearch5:{item['title']} ({item['year']}) {self.config.get('yt_search_keywords')}"
+            ]
+            self.yt_dlp_process(search, ytdl_opts, True)
+
+        else:
+            for link in links:
+                if self.config["only_one_trailer"] and len(os.listdir(cache_path)) == 1:
+                    continue
+                if self.config["max_length"]:
+                    ytdl_opts["match_filter"] = lambda info: check_duration(
+                        link, **info
+                    )
+                try:
+                    ytdl_opts["outtmpl"] = f"{cache_path}/{link['name']}"
+                    self.yt_dlp_process(link, ytdl_opts)
+                except Exception as e:
+                    self.logger.info(f"fail to download {link} {e}")
+                    continue
 
         if os.path.exists(cache_path):
             files = os.listdir(cache_path)
@@ -293,11 +306,11 @@ class Utils:
         :param path: Path to check for available disk space
         :return: True if disk space is sufficient, False otherwise
         """
-        min_free_gb = self.config.get(
-            "min_free_space_gb", 5
-        )  # Minimum free space required in GB
+        # Minimum free space required in GB
+        min_free_gb = self.config.get("min_free_space_gb", 5)
         _, _, free = shutil.disk_usage(path)
-        free_gb = free / (1024**3)  # Convert bytes to GB
+        # Convert bytes to GB
+        free_gb = free / (1024**3)
         if free_gb < min_free_gb:
             self.logger.error(
                 "DISK SPACE",

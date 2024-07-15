@@ -1,4 +1,4 @@
-""" modules/logger.py """
+"""modules/logger.py"""
 
 from time import sleep
 import sys
