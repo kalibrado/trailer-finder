@@ -82,7 +82,7 @@ def sonarr(logger, config: dict, utils: Utils):
                         logger.warning("\t\t ->", "No trailers available on {query}", query=show["query_type"])
                         link = {
                             "name": show["use_title"],
-                            "yt_link": f"gvsearch5:{show["use_title"]} {config.get('YT_DLP_SEARCH_KEYWORD')}",
+                            "yt_link": f"gvsearch5:{show['use_title']} {config.get('YT_DLP_SEARCH_KEYWORD')}",
                         }
                         list_of_trailers = [link]
                         logger.info("\t\t  ->", "Search trailer with {query}", query=link["yt_link"])
