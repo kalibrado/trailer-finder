@@ -1,4 +1,5 @@
 {
+      "{msg_gen}": "{msg_gen}",
       "Starting trailer finder.": "Starting trailer finder.",
       "Show trailer finder started.": "Show trailer finder started.",
       "Movie trailer finder started.": "Movie trailer finder started.",
@@ -7,18 +8,21 @@
       "Show trailer finder ended.": "Show trailer finder ended.",
       "Movie trailer finder ended.": "Movie trailer finder ended.",
       "Waiting for {hours} hours.": "Waiting for {hours} hours.",
-      "Getting information about {tmdb_id} {item_type}": "Getting information about {tmdb_id} {item_type}",
+      "Getting information about {info}": "Getting information about {info}",
       "Create '{path}' folder": "Create '{path}' folder",
-      "Trailer downloaded.": "Trailer downloaded.",
-      "Trailer download failed.": "Trailer download failed.",
+      "Trailer {filename} downloaded.": "Trailer {filename} downloaded.",
+      "Trailer {filename} download failed.": "Trailer {filename} download failed.",
       "Downloading {title} trailer from {link}": "Downloading {title} trailer from {link}",
       "Failed to download from {link}: {error}": "Failed to download from {link}: {error}",
       "Invalid duration for {link}: {error}": "Invalid duration for {link}: {error}",
       "No cache folder for {title}": "No cache folder for {title}",
       "Insufficient disk space in {path}. Only {free_gb:.2f} GB free.": "Insufficient disk space in {path}. Only {free_gb:.2f} GB free.",
       "An error occurred: {error}": "An error occurred: {error}",
-      "{msg_gen}": "{msg_gen}",
       "File {name} does not exist in {path}": "File {name} does not exist in {path}",
-      "Warning: {Warning}": "Warning: {Warning}",
-      "No trailer is available for {title} ({year})": "No trailer is available for {title} ({year})"
+      "Warning: {warning}": "Warning: {warning}",
+      "No trailer is available for {title} ({year})": "No trailer is available for {title} ({year})",
+      "Search trailer with {query}": "Search trailer with {query}",
+      "No trailers available on {query}": "No trailers available on {query}",
+      "FFMPEG Template commande not definned": "FFMPEG Command template is not defined in config.yaml",
+      "FFMPEG Run commande: {cmd}": "FFMPEG Run commande: {cmd}"
 }
