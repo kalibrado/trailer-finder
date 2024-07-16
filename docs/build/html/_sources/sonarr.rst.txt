@@ -1,0 +1,7 @@
+sonarr module
+=============
+
+.. automodule:: sonarr
+   :members:
+   :undoc-members:
+   :show-inheritance:

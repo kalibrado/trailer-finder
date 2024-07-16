@@ -1,4 +1,4 @@
-# Contributing
+### Contributing
 
 Thank you for considering contributing to Trailer Finder! This document outlines the guidelines and steps for contributing to the project.
 
@@ -26,7 +26,7 @@ First, fork the Trailer Finder repository to your GitHub account by clicking on 
 Clone your fork of the repository to your local machine:
 
 ```bash
-git clone https://github.com/kalibrado/trailer-finder.git
+git clone https://github.com/your-username/trailer-finder.git
 cd trailer-finder
 ```
 

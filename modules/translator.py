@@ -9,17 +9,17 @@ class Translator:
     Translator class to handle language translations.
 
     Attributes:
-        default_locale (str): The default language locale.
+        APP_TRANSLATE (str): The default language locale.
     """
 
-    def __init__(self, default_locale="en"):
+    def __init__(self, local="en"):
         """
         Initializes the Translator with a default locale and loads translation files.
 
         Args:
-            default_locale (str): The default language locale. Default is 'en'.
+            local (str): The default language locale. Default is 'en'.
         """
-        self.default_locale = default_locale
+        self.local = local
         self.translations = self._load_translations()
 
     def _load_translations(self):
@@ -51,7 +51,7 @@ class Translator:
         Returns:
             str: The translated and formatted message string.
         """
-        msg_template = self.translations.get(self.default_locale, {}).get(
+        msg_template = self.translations.get(self.local, {}).get(
             msg_key, msg_key
         )
         try:

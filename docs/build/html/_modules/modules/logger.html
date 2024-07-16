@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>modules.logger &#8212; Trailer Finder v1.4.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=32cf698c"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for modules.logger</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for logging messages with different severity levels and language localization.</span>
+
+<span class="sd">This module defines a `Logger` class that extends the `Translator` class to log messages</span>
+<span class="sd">with colors representing different severity levels (info, success, warning, error, debug).</span>
+
+<span class="sd">Attributes:</span>
+<span class="sd">    RESET (str): ANSI escape code to reset text color to default.</span>
+<span class="sd">    RED (str): ANSI escape code for red text (error messages).</span>
+<span class="sd">    GREEN (str): ANSI escape code for green text (success messages).</span>
+<span class="sd">    WARN (str): ANSI escape code for yellow text (warning messages).</span>
+<span class="sd">    WHITE (str): ANSI escape code for white text (info messages).</span>
+
+<span class="sd">Classes:</span>
+<span class="sd">    Logger: Extends the Translator class to log messages with different severity levels.</span>
+
+<span class="sd">Usage example:</span>
+
+<span class="sd">    # Importing the Logger class</span>
+<span class="sd">    from modules.logger import Logger</span>
+
+<span class="sd">    # Initializing the logger</span>
+<span class="sd">    logger = Logger()</span>
+
+<span class="sd">    # Logging an informational message</span>
+<span class="sd">    logger.info(&quot;Downloading&quot;, &quot;Started downloading movie trailers.&quot;)</span>
+
+<span class="sd">    # Logging a success message</span>
+<span class="sd">    logger.success(&quot;Downloaded&quot;, &quot;Successfully downloaded trailer {trailer_name}.&quot;, trailer_name=&quot;Movie Trailer&quot;)</span>
+
+<span class="sd">    # Logging a warning message</span>
+<span class="sd">    logger.warning(&quot;File not found&quot;, &quot;The file {file_path} does not exist.&quot;, file_path=&quot;/path/to/file.txt&quot;)</span>
+
+<span class="sd">    # Logging an error message</span>
+<span class="sd">    logger.error(&quot;File read error&quot;, &quot;Failed to read file {file_name}.&quot;, file_name=&quot;example.txt&quot;)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">modules.translator</span> <span class="kn">import</span> <span class="n">Translator</span>
+
+<span class="c1"># Console colors for log messages</span>
+<span class="n">RESET</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span>
+<span class="n">RED</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[31m&quot;</span>
+<span class="n">GREEN</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[32m&quot;</span>
+<span class="n">WARN</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0;33m&quot;</span>
+<span class="n">WHITE</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[37m&quot;</span>
+
+
+<div class="viewcode-block" id="Logger">
+<a class="viewcode-back" href="../../modules/logger.html#modules.logger.Logger">[docs]</a>
+<span class="k">class</span> <span class="nc">Logger</span><span class="p">(</span><span class="n">Translator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logger class that extends the Translator class to log messages with different severity levels.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        APP_TRANSLATE (str): The default language locale for translations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Logger with a default locale.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            local (str): The default language locale for translations. Default is &#39;en&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logs a message to the console with the specified color.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            color (str): The color code for the message.</span>
+<span class="sd">            msg (str): The message to log.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">RESET</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Logger.info">
+<a class="viewcode-back" href="../../modules/logger.html#modules.logger.Logger.info">[docs]</a>
+    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">msg_key</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logs an informational message.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix (str): The prefix to add before the message. Default is a space.</span>
+<span class="sd">            msg_key (str): The key for the message to translate.</span>
+<span class="sd">            **kwargs: Additional arguments for the translation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">msg_key</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">WHITE</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Logger.success">
+<a class="viewcode-back" href="../../modules/logger.html#modules.logger.Logger.success">[docs]</a>
+    <span class="k">def</span> <span class="nf">success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">msg_key</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logs a success message.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix (str): The prefix to add before the message. Default is a space.</span>
+<span class="sd">            msg_key (str): The key for the message to translate.</span>
+<span class="sd">            **kwargs: Additional arguments for the translation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">msg_key</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">GREEN</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Logger.warning">
+<a class="viewcode-back" href="../../modules/logger.html#modules.logger.Logger.warning">[docs]</a>
+    <span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">msg_key</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logs a warning message.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix (str): The prefix to add before the message. Default is a space.</span>
+<span class="sd">            msg_key (str): The key for the message to translate.</span>
+<span class="sd">            **kwargs: Additional arguments for the translation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">msg_key</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">WARN</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Logger.error">
+<a class="viewcode-back" href="../../modules/logger.html#modules.logger.Logger.error">[docs]</a>
+    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">msg_key</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logs an error message.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix (str): The prefix to add before the message. Default is a space.</span>
+<span class="sd">            msg_key (str): The key for the message to translate.</span>
+<span class="sd">            **kwargs: Additional arguments for the translation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">msg_key</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="n">RED</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Trailer Finder</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/logger.html">Logger Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/radarr.html">radarr module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/sonarr.html">sonarr module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/translator.html">translator module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/utils.html">utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/youtube_dl.html">youtube_dl module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Kalibrado.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

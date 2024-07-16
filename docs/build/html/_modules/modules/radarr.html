@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>modules.radarr &#8212; Trailer Finder v1.4.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=32cf698c"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for modules.radarr</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">modules/radarr.py</span>
+
+<span class="sd">This module interacts with the Radarr API to find and download trailers for movies.</span>
+
+<span class="sd">Classes:</span>
+<span class="sd">    None</span>
+
+<span class="sd">Functions:</span>
+<span class="sd">    radarr(logger: Logger, config: dict, utils: Utils) -&gt; None:</span>
+<span class="sd">        Main function to find and download trailers for movies using the Radarr API.</span>
+
+<span class="sd">Usage Example:</span>
+
+<span class="sd">    # Importing the radarr function</span>
+<span class="sd">    from modules.radarr import radarr</span>
+
+<span class="sd">    # Initialize a logger instance (assuming &#39;logger&#39; is already initialized)</span>
+<span class="sd">    logger = Logger()</span>
+
+<span class="sd">    # Example configuration dictionary</span>
+<span class="sd">    config = {</span>
+<span class="sd">        &quot;RADARR_HOST&quot;: &quot;http://localhost:7878&quot;,  # Radarr host URL</span>
+<span class="sd">        &quot;RADARR_API&quot;: &quot;your_api_key_here&quot;,  # Radarr API key</span>
+<span class="sd">        &quot;APP_DEFAULT_DIR&quot;: &quot;trailers&quot;,  # Default directory for saving trailers</span>
+<span class="sd">        &quot;APP_CUSTOM_PATH&quot;: &quot;/custom/path&quot;,  # Custom path for saving trailers (optional)</span>
+<span class="sd">        &quot;APP_CUSTOM_NAME_MOVIE&quot;: &quot;movie_trailers&quot;,  # Custom directory name for trailers (optional)</span>
+<span class="sd">        &quot;APP_ONLY_ONE_TRAILER&quot;: True,  # Download only one trailer per movie (optional)</span>
+<span class="sd">    }</span>
+
+<span class="sd">    # Initialize an instance of your Utils class (assuming &#39;utils&#39; is already initialized)</span>
+<span class="sd">    utils = Utils()</span>
+
+<span class="sd">    # Call the radarr function to find and download trailers</span>
+<span class="sd">    radarr(logger, config, utils)</span>
+
+<span class="sd">    # Example output folder structure:</span>
+<span class="sd">    # Assuming the output folder structure is based on the movie title and year</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pyarr</span> <span class="kn">import</span> <span class="n">RadarrAPI</span>
+<span class="kn">from</span> <span class="nn">modules.logger</span> <span class="kn">import</span> <span class="n">Logger</span>
+<span class="kn">from</span> <span class="nn">modules.utils</span> <span class="kn">import</span> <span class="n">Utils</span>
+
+
+<div class="viewcode-block" id="radarr">
+<a class="viewcode-back" href="../../modules/radarr.html#modules.radarr.radarr">[docs]</a>
+<span class="k">def</span> <span class="nf">radarr</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">utils</span><span class="p">:</span> <span class="n">Utils</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main function to find and download trailers for movies using the Radarr API.</span>
+
+<span class="sd">    :param logger: Logger instance for logging messages</span>
+<span class="sd">    :param config: Configuration dictionary containing Radarr API host and other settings</span>
+<span class="sd">    :param utils: Utility functions instance for various helper functions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;RADARR_HOST&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;RADARR_API&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">api</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;[ RADARR ]&quot;</span><span class="p">,</span> <span class="s2">&quot;Warning: </span><span class="si">{Warning}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="ne">Warning</span><span class="o">=</span><span class="s2">&quot; the radarr application is not configured in the yaml file &quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Initialize Radarr API</span>
+        <span class="n">radarr_api</span> <span class="o">=</span> <span class="n">RadarrAPI</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">api</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{msg_gen}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg_gen</span><span class="o">=</span><span class="s2">&quot;--------------------------------&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[ RADARR ]&quot;</span><span class="p">,</span> <span class="s2">&quot;Movie trailer finder started.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Iterate through all movies in Radarr</span>
+        <span class="k">for</span> <span class="n">movie</span> <span class="ow">in</span> <span class="n">radarr_api</span><span class="o">.</span><span class="n">get_movie</span><span class="p">():</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">movie</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+
+            <span class="n">path</span> <span class="o">=</span> <span class="n">movie</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_title</span><span class="p">(</span><span class="n">movie</span><span class="p">)</span>
+            <span class="c1"># defined title to use for all process</span>
+            <span class="n">movie</span><span class="p">[</span><span class="s2">&quot;use_title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">title</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">movie</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">movie</span><span class="p">[</span><span class="s2">&quot;tmp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s1">)&#39;</span>
+
+            <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># radarr item dont have path or title</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;[ RADARR ]&quot;</span><span class="p">,</span> <span class="s2">&quot;Warning: </span><span class="si">{warning}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">warning</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Path or Title not exist in: </span><span class="si">{</span><span class="n">movie</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">movie</span><span class="p">[</span><span class="s2">&quot;outputs_folder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">movie</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;APP_DEFAULT_DIR&quot;</span><span class="p">])</span>
+
+            <span class="n">custom_path</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;APP_CUSTOM_PATH&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">custom_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;APP_CUSTOM_NAME_MOVIE&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">custom_path</span> <span class="ow">and</span> <span class="n">custom_name</span><span class="p">:</span>
+                <span class="n">movie</span><span class="p">[</span><span class="s2">&quot;outputs_folder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">custom_path</span><span class="p">,</span> <span class="n">custom_name</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+
+            <span class="n">outputs_folder</span> <span class="o">=</span> <span class="n">movie</span><span class="p">[</span><span class="s2">&quot;outputs_folder&quot;</span><span class="p">]</span>
+            <span class="c1"># create ooutputs folder if not exist</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">outputs_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Skip if not enough space</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_space</span><span class="p">(</span><span class="n">outputs_folder</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{msg_gen}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg_gen</span><span class="o">=</span><span class="s2">&quot;--------------------------------&quot;</span><span class="p">)</span>
+
+            <span class="c1"># outputs list dir</span>
+            <span class="n">trailers_in_outputs_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">outputs_folder</span><span class="p">)</span>
+
+            <span class="c1"># count trailers in ouputs</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trailers_in_outputs_folder</span><span class="p">)</span>
+
+            <span class="c1"># Skip if trailer already exists</span>
+            <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;APP_ONLY_ONE_TRAILER&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> -&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{title}</span><span class="s2"> (</span><span class="si">{year}</span><span class="s2">) already has </span><span class="si">{count}</span><span class="s2"> trailers.&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> -&gt; SCAN&quot;</span><span class="p">,</span> <span class="s2">&quot;Looking for </span><span class="si">{title}</span><span class="s2"> (</span><span class="si">{year}</span><span class="s2">) trailers&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">)</span>
+
+            <span class="c1"># Fetch trailers using TMDB ID</span>
+            <span class="n">trailers</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">trailer_pull</span><span class="p">(</span><span class="n">movie</span><span class="p">[</span><span class="s2">&quot;tmdbId&quot;</span><span class="p">],</span> <span class="s2">&quot;movie&quot;</span><span class="p">)</span>
+            <span class="n">list_of_trailers</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_new_trailers</span><span class="p">(</span><span class="n">trailers</span><span class="p">,</span> <span class="n">trailers_in_outputs_folder</span><span class="p">)</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">download_trailers</span><span class="p">(</span><span class="n">list_of_trailers</span><span class="p">,</span> <span class="n">movie</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[ RADARR ]&quot;</span><span class="p">,</span> <span class="s2">&quot;Movie trailer finder ended.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{msg_gen}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg_gen</span><span class="o">=</span><span class="s2">&quot;--------------------------------&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;[ RADARR ]&quot;</span><span class="p">,</span> <span class="s2">&quot;An error occurred: </span><span class="si">{error}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">err</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Trailer Finder</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/logger.html">Logger Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/radarr.html">radarr module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/sonarr.html">sonarr module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/translator.html">translator module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/utils.html">utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/youtube_dl.html">youtube_dl module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Kalibrado.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
