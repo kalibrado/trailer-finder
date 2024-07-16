@@ -37,7 +37,7 @@ def sonarr(logger, config: dict, utils: Utils):
             show["use_title"] = title
             year = show.get("year", None)
             show["tmp"] = f"{title} ({year})"
-
+            show["outputs_folder"] = os.path.join(show["path"], config["APP_DEFAULT_DIR"])
             if path is None or title is None:
                 continue
 
@@ -47,12 +47,11 @@ def sonarr(logger, config: dict, utils: Utils):
             if custom_path and custom_name:
                 show["outputs_folder"] = os.path.join(custom_path, custom_name, title)
 
-            outputs_folder = show["outputs_folder"]
             # create outputs folder if not exist
-            os.makedirs(outputs_folder, exist_ok=True)
+            os.makedirs(show["outputs_folder"], exist_ok=True)
 
             # Skip if not enough space
-            if not utils.check_space(outputs_folder):
+            if not utils.check_space(show["outputs_folder"]):
                 continue
 
             logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
@@ -63,9 +62,10 @@ def sonarr(logger, config: dict, utils: Utils):
                     title_format = config.get("YT_DLP_SEARCH_KEYWORD_SEASON", "{show} Season {season_number}")
                     show["use_title"] = title_format.format(show=title, season_number=season["seasonNumber"])
                     # Path to store trailers
-                    show["outputs_folder"] = os.path.join(outputs_folder, show["use_title"])
+                    show["outputs_folder"] = os.path.join(show["outputs_folder"], show["use_title"])
+
                     os.makedirs(show["outputs_folder"], exist_ok=True)
-                    # outputs list dir
+
                     trailers_in_outputs_folder = os.listdir(show["outputs_folder"])
                     count = len(trailers_in_outputs_folder)
 
@@ -85,7 +85,7 @@ def sonarr(logger, config: dict, utils: Utils):
                             "yt_link": f"gvsearch5:{show['use_title']} {config.get('YT_DLP_SEARCH_KEYWORD')}",
                         }
                         list_of_trailers = [link]
-                        logger.info("\t\t  ->", "Search trailer with {query}", query=link["yt_link"])
+                        logger.info("\t\t ->", "Search trailer with {query}", query=link["yt_link"])
                         show["query_type"] = link["yt_link"]
 
                     utils.download_trailers(list_of_trailers, show)
