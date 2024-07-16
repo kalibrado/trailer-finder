@@ -122,7 +122,7 @@ def radarr(logger: Logger, config: dict, utils: Utils) -> None:
                 logger.warning("\t\t ->", "No trailers available on {query}", query=movie["query_type"])
                 link = {
                     "name": movie["use_title"],
-                    "yt_link": f"gvsearch5:{movie["use_title"]} {config.get('YT_DLP_SEARCH_KEYWORD')}",
+                    "yt_link": f"gvsearch5:{movie['use_title']} {config.get('YT_DLP_SEARCH_KEYWORD')}",
                 }
                 list_of_trailers = [link]
                 logger.info("\t\t ->", "Search trailer with {query}", query=link["yt_link"])
