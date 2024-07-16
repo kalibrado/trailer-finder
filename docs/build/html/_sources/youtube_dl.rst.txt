@@ -1,7 +1,0 @@
-youtube\_dl module
-==================
-
-.. automodule:: youtube_dl
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,7 +1,0 @@
-radarr module
-=============
-
-.. automodule:: radarr
-   :members:
-   :undoc-members:
-   :show-inheritance:
