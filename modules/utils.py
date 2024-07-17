@@ -73,12 +73,14 @@ import requests
 import urllib3
 from modules.logger import Logger
 from modules.youtube_dl import YoutubeDL
+from modules.exceptions import FfmpegError, FfmpegCommandMissing, InsufficientDiskSpaceError
+from modules.translator import Translator
 
 # Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class Utils:
+class Utils(Translator):
     def __init__(self, logger: Logger, config: Dict[str, Union[str, int, bool]]) -> None:
         """
         Initialize Utils class with a logger and configuration.
@@ -89,6 +91,7 @@ class Utils:
         self.logger = logger
         self.config = config
         self.yt_downloader = YoutubeDL(logger, config)
+        super().__init__(config.get("APP_TRANSLATE"))
 
     def replace_slash_backslash(self, text: str) -> str:
         """
@@ -130,7 +133,7 @@ class Utils:
         :return: List of cleaned trailer information
         """
         # Log the process of getting trailer information
-        self.logger.info("\t\t ->", "Getting information about {info}", info=f"TYPE: {item_type} ID: {tmdb_id}")
+        self.logger.info("Retrieving information about « {info} ».", info=f"TYPE: {item_type} ID: {tmdb_id}")
         base_link = "api.themoviedb.org/3"
         api_key = self.config["TMDB_API_KEY"]
 
@@ -200,7 +203,7 @@ class Utils:
 
         # Handle warnings if the response status code is not in the 200-300 range
         msg = f"{response.status_code} - {response.json().get('status_message', 'No message')}"
-        self.logger.warning("\t\t ->", "Warning: {warning}", warning=msg)
+        self.logger.warning("Warning « {warning} ».", warning=msg)
         return []
 
     def post_process(self, cache_path: str, files: List[str], item: Dict[str, str]) -> None:
@@ -216,7 +219,7 @@ class Utils:
 
         ffmpeg_cmd_template = self.config.get("FFMPEG_COMMAND_TEMPLATE", None)
         if ffmpeg_cmd_template is None:
-            raise ValueError("FFMPEG Template commande not definned")
+            raise FfmpegCommandMissing(self.translate("The ffmpeg command is not defined in config.yaml."))
 
         # Iterate through each downloaded file and perform FFMPEG processing
         for file in files:
@@ -231,7 +234,7 @@ class Utils:
             )
 
             # Log the FFMPEG command used for processing
-            self.logger.info("\t\t ->", "FFMPEG Run commande: {cmd}", cmd=cmd)
+            self.logger.info("ffmpeg command « {cmd} ».", cmd=cmd)
 
             subprocess_args = {}
             if self.config.get("APP_QUIET_MODE", False):
@@ -239,9 +242,11 @@ class Utils:
                 subprocess_args["stderr"] = subprocess.DEVNULL
                 subprocess_args["stdin"] = subprocess.DEVNULL
 
-            # Execute the FFMPEG command with subprocess
-            subprocess.run(cmd, **subprocess_args, check=False, shell=True)
-
+            try:
+                # Execute the FFMPEG command with subprocess
+                subprocess.run(cmd, **subprocess_args, check=False, shell=True)
+            except subprocess.CalledProcessError as e:
+                raise FfmpegError(self.translate("The ffmpeg command has an error « {error} ».", error=e))
         # Always remove the cache_path after FFMPEG execution
         shutil.rmtree(cache_path)
 
@@ -259,11 +264,11 @@ class Utils:
             files = os.listdir(cache_path)
             if not files:
                 name = self.get_title(item)
-                self.logger.warning("\t\t ->", "No trailers available on {query}", query=item["query_type"])
+                self.logger.warning("No trailers were found with « {query} ».", query=item["query_type"])
 
                 link = {
                     "name": self.replace_slash_backslash(name),
-                    "yt_link": f"ytsearch5:{item['use_title']} ({item['year']}) {self.config.get('YT_DLP_SEARCH_KEYWORD')}",
+                    "yt_link": f"ytsearch5:{item['use_title']} {self.config.get('YT_DLP_SEARCH_KEYWORD')}",
                 }
 
                 arr_id_trailer = item.get("youTubeTrailerId", None)
@@ -271,7 +276,7 @@ class Utils:
                     link["yt_link"] = self.config["YT_DLP_BASE_URL"] + arr_id_trailer
                 item["query_type"] = link["yt_link"]
 
-                self.logger.info("\t\t ->", "Search trailer with {query}", query=item["query_type"])
+                self.logger.info("Search trailers with « {query} ».", query=item["query_type"])
                 cache_path = self.yt_downloader.download_trailers([link], item)
                 files = os.listdir(cache_path)
 
@@ -285,10 +290,17 @@ class Utils:
         :param path: Path where trailers will be downloaded
         :return: Boolean indicating if there is enough space
         """
-        disk = shutil.disk_usage(path)
-        # Convert GB to bytes
-        min_free_space = self.config.get("MIN_FREE_SPACE", 10) * (1024**3)
-        return disk.free > min_free_space
+
+        total, used, free = shutil.disk_usage(path)
+        free_gb = free / (1024**3)  # Convert bytes to GB
+        if free_gb < self.config.get("APP_FREE_SPACE_GB", 5):
+            raise InsufficientDiskSpaceError(
+                self.translate(
+                    "« {path} » does not have enough disk space. Only « {free_gb} » GB are available.",
+                    path=path,
+                    free_gb=int(free_gb),
+                )
+            )
 
     def get_new_trailers(self, trailer_names: List[str], existing_files: List[str]) -> List[str]:
         """

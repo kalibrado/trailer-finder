@@ -50,9 +50,11 @@ Usage Example:
 import os
 import yt_dlp
 from modules.logger import Logger
+from modules.exceptions import DurationError, DonwloadError
+from modules.translator import Translator
 
 
-class YoutubeDL:
+class YoutubeDL(Translator):
     def __init__(self, logger: Logger, config: dict) -> None:
         """
         Initialize YoutubeDL class with a logger and configuration.
@@ -62,15 +64,20 @@ class YoutubeDL:
         """
         self.logger = logger
         self.config = config
+        super().__init__(config.get("APP_TRANSLATE"))
 
-    def dl_progress(self, d):
+    def progress_hooks(self, d: dict):
+        info_dict = d.get("info_dict")
+        title = d["filename"].split("/")[-1]
+        if isinstance(info_dict, dict):
+            title = info_dict.get("title")
         # Define a download progress function to handle yt-dlp progress hooks
         if d["status"] == "finished":
-            self.logger.success("\t\t ->", "Trailer {filename} downloaded.", filename=d["filename"].split('/')[-1])
+            self.logger.success("The download of the trailer « {title} » succeeded.", title=title)
         if d["status"] == "error":
-            raise ValueError("Trailer {filename} download failed.", filename=d["filename"])
+            raise DonwloadError(self.translate("The download of the trailer « {title} » failed.", title=title))
 
-    def check_duration(self, info, *, incomplete):
+    def match_filter(self, info, *, incomplete):
         """
         Check the duration of a video and raise an error if it exceeds the maximum length.
 
@@ -80,9 +87,12 @@ class YoutubeDL:
         duration = info.get("duration")
         max_length = self.config.get("YT_DLP_MAX_LENGTH", None)
         if max_length is None:
-            return
+            max_length = duration
+            self.logger.warning("YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.")
+
         if duration and (int(duration) > int(max_length)):
-            raise ValueError("Invalid duration: {duration}s".format(duration=duration))
+            title = info.get("title")
+            raise DurationError(self.translate("Trailer « {title} » is greater than « {duration} ».", title=title, duration=duration))
 
     def yt_dlp_process(self, link: dict, ytdl_opts: dict) -> None:
         """
@@ -96,17 +106,9 @@ class YoutubeDL:
         title = link.get("name")
         yt_link = link.get("yt_link")
 
-        try:
-            # Log the process of downloading the trailer using yt-dlp
-            self.logger.info("\t\t ->", "Downloading {title} trailer from {link}", title=f"{title}", link=yt_link)
-            ydl.download(yt_link)
-
-        except yt_dlp.DownloadError as e:
-            # Handle download errors during yt-dlp download and log them
-            self.logger.error("\t\t ->", "Download error for {link}: {error}", link=f"{title} - {yt_link}", error=str(e))
-        except Exception as e:
-            # Handle unexpected errors during yt-dlp download and log them
-            self.logger.error("\t\t ->", "Unexpected error for {link}: {error}", link=f"{title} - {yt_link}", error=str(e))
+        # Log the process of downloading the trailer using yt-dlp
+        self.logger.info("Trailer download from « {link} » for « {title} ».", title=f"{title}", link=yt_link)
+        ydl.download(yt_link)
 
     def download_trailers(self, links: list, item: dict) -> str:
         """
@@ -122,7 +124,7 @@ class YoutubeDL:
         os.makedirs(cache_path, exist_ok=True)
 
         ytdl_opts = {
-            "progress_hooks": [self.dl_progress],
+            "progress_hooks": [self.progress_hooks],
             "format": self.config.get("YT_DLP_FORMAT", "bestvideo+bestaudio"),
             "noplaylist": True,
             "no_warnings": self.config.get("YT_DLP_NO_WARNINGS", False),
@@ -130,7 +132,7 @@ class YoutubeDL:
             "quiet": self.config.get("APP_QUIET_MODE", False),
             "noprogress": self.config.get("APP_QUIET_MODE", False),
             "sleep_interval_requests": self.config.get("YT_DLP_INTERVAL_RESQUESTS", 1),
-            "match_filter": self.check_duration,
+            "match_filter": self.match_filter,
         }
         if self.config.get("YT_DLP_SKIP_INTROS", False):
             ytdl_opts["postprocessors"] = [
@@ -138,20 +140,21 @@ class YoutubeDL:
                 {"key": "ModifyChapters", "remove_sponsor_segments": self.config.get("YT_DLP_SPONSORS_BLOCK", [])},
             ]
         # Loop through each trailer link and attempt to download it
+
         for link in links:
-            if link:
-                try:
-                    # if only one trailer use default name
-                    if self.config.get("APP_ONLY_ONE_TRAILER", True):
-                        # if have trailer continue to another item
-                        if len(os.listdir(cache_path)) == 1:
-                            continue
-                        ytdl_opts["outtmpl"] = f"{cache_path}/{title}.%(ext)s"
-                    else:
-                        ytdl_opts["outtmpl"] = f"{cache_path}/{link['name']}"
-
-                    self.yt_dlp_process(link, ytdl_opts)
-                except Exception as e:
-                    self.logger.error("\t\t ->", "Unexpected error during download for {link}: {error}", link=link["name"], error=str(e))
-
+            # if only one trailer use default name
+            if self.config.get("APP_ONLY_ONE_TRAILER", True):
+                # if have trailer continue to another item
+                if len(os.listdir(cache_path)) == 1:
+                    continue
+                ytdl_opts["outtmpl"] = f"{cache_path}/{title}.%(ext)s"
+            else:
+                ytdl_opts["outtmpl"] = f"{cache_path}/{link['name']}"
+            try:
+                ydl = yt_dlp.YoutubeDL(ytdl_opts)
+                self.logger.info("Trailer download from « {link} » for « {title} ».", title=f"{title}", link=link.get("yt_link"))
+                ydl.download(link.get("yt_link"))
+            except DonwloadError as e:
+                self.logger.error("Unexpected error for {link}: {error}", link=f"{title} - {link}", error=str(e))
+                continue
         return cache_path
