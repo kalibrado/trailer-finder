@@ -2,7 +2,8 @@ name: Update latest Docker image
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - "main"
 
   pull_request:
     branches:

@@ -73,7 +73,12 @@ def sonarr(logger, config: dict, utils: Utils):
                     show["outputs_folder"] = os.path.join(show["outputs_folder"], show["use_title"])
 
                     os.makedirs(show["outputs_folder"], exist_ok=True)
-
+                    try:
+                        # Skip if not enough space
+                        utils.check_space(show["outputs_folder"])
+                    except InsufficientDiskSpaceError as err:
+                        logger.error("An error has occurred: {error}.", error=err)
+                        continue
                     trailers_in_outputs_folder = os.listdir(show["outputs_folder"])
                     count = len(trailers_in_outputs_folder)
 
