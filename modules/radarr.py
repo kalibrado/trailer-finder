@@ -45,6 +45,7 @@ from modules.logger import Logger
 from modules.utils import Utils
 from modules.exceptions import InsufficientDiskSpaceError
 
+
 def radarr(logger: Logger, config: dict, utils: Utils) -> None:
     """
     Main function to find and download trailers for movies using the Radarr API.
