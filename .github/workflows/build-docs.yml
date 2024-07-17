@@ -40,20 +40,30 @@ jobs:
           python -m pip install --upgrade pip
           pip install sphinx
 
-      - name: Setup Sphinx documentation
+      - name: Get the latest tag
+        id: get_tag
         run: |
-          mkdir -p docs 
-          cd docs
-          sphinx-quickstart -q -p "Trailer Finder" -a "Kalibrado" -v "${{ steps.meta.outputs.tags || github.head_ref || github.ref_name }}"
-          make html
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
+      - name: Update conf.py with the latest tag
+        run: |
+          sed -i "s/^release = .*/release = '${LATEST_TAG}'/" docs/source/conf.py
+
+      - name: Build Sphinx documentation
+        run: |
+          make -C docs html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
-          path: "./docs/_build/html"
+          path: "docs/build/html"
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -1,9 +1,10 @@
 .venv
 *.pyc
 */__pycache__/
-cache/*
+tmp/*
 .idea/
 *.sqlite
 config/config.yaml
 dl_test
 .vscode
+docs/build
