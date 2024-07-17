@@ -6,12 +6,14 @@ It utilizes configuration from 'config/config.yaml' and logs events using a Logg
 """
 
 import os
+import sys
 from time import sleep
 import yaml
 from modules.sonarr import sonarr
 from modules.radarr import radarr
 from modules.logger import Logger
 from modules.utils import Utils
+from modules.exceptions import FfmpegError, FfmpegCommandMissing
 
 
 def main():
@@ -29,7 +31,7 @@ def main():
     # Check if the configuration file exists
     if not os.path.exists("config/config.yaml"):
         # Log an error if the configuration file does not exist and terminate the script
-        logger.error("[ MAIN ]", "File {name} not exist in {path}", name="config.yaml", path="config/")
+        logger.error("File {name} not exist in {path}", name="config.yaml", path="config/")
         return
 
     # Load configuration from the YAML file
@@ -37,53 +39,39 @@ def main():
         config = yaml.safe_load(f)
 
         # Initialize Logger with a specific localization setting from config.yaml
-        logger = Logger(local=config.get("APP_TRANSLATE", "en"))
+        logger = Logger(local=config.get("APP_TRANSLATE"), date_format=config.get("APP_LOG_DATE_FORMAT"))
 
         # Initialize Utils object to provide utility methods for operations
         utils = Utils(logger, config)
+        try:
+            # Infinite loop to continuously run the processes
+            while True:
+                # Log the start of the trailer finding process
+                logger.info("Starting trailers finder.")
 
-        # Infinite loop to continuously run the processes
-        while True:
-            # Log the start of the trailer finding process
-            logger.info("[ MAIN ]", "Starting trailer finder.")
+                # Run the Radarr process to find and download movie trailers
+                radarr(logger, config, utils)
 
-            # Run the Radarr process to find and download movie trailers
-            radarr(logger, config, utils)
+                # Run the Sonarr process to find and download TV show trailers
+                sonarr(logger, config, utils)
 
-            # Run the Sonarr process to find and download TV show trailers
-            sonarr(logger, config, utils)
+                # Log a separator line between runs
+                print("--------------------------------")
 
-            # Log a separator line between runs
-            logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
-
-            # Sleep for the specified duration before the next run
-            time = config["APP_SLEEP_TIME"]
-            logger.info("[ MAIN ]", "Waiting for {hours} hours.", hours=time)
-            sleep(time * 3600)  # Convert hours to seconds for sleep function
-
-            # Clear the console screen for better readability
-            os.system("clear")
+                # Sleep for the specified duration before the next run
+                time = config["APP_SLEEP_TIME"]
+                logger.info("Please wait for « {hours} » hours.", hours=time)
+                sleep(time * 3600)  # Convert hours to seconds for sleep function
+                # Clear the console screen for better readability
+                os.system("clear")
+        except (FfmpegError, FfmpegCommandMissing) as err:
+            logger.error("An error has occurred: {error}.", error=err)
+        except KeyboardInterrupt:
+            logger.error("Program interruption detected. Shutdown in progress...")
+        finally:
+            sys.exit(0)
 
 
 if __name__ == "__main__":
-    # Clear the console screen before starting the main function
-    os.system("clear")
-
-    # Print a welcome ASCII art banner to greet the user
-    print(r"""
-    █████████╗██████╗  █████╗ ██╗██╗     ███████╗██████╗       ███████╗██╗███╗   ██╗██████╗ ███████╗██████╗                                   
-    ╚═══██╔══╝██╔══██╗██╔══██╗██║██║     ██╔════╝██╔══██╗      ██╔════╝██║████╗  ██║██╔══██╗██╔════╝██╔══██╗                                  
-        ██║   ██████╔╝███████║██║██║     █████╗  ██████╔╝█████╗█████╗  ██║██╔██╗ ██║██║  ██║█████╗  ██████╔╝                                  
-        ██║   ██╔══██╗██╔══██║██║██║     ██╔══╝  ██╔══██╗╚════╝██╔══╝  ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗                                  
-        ██║   ██║  ██║██║  ██║██║███████╗███████╗██║  ██║      ██║     ██║██║ ╚████║██████╔╝███████╗██║  ██║                                  
-        ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝                                  
-                                                    ██████╗ ██╗   ██╗    ██╗  ██╗ █████╗ ██╗     ██╗██████╗ ██████╗  █████╗ ██████╗  ██████╗ 
-                                                    ██╔══██╗╚██╗ ██╔╝    ██║ ██╔╝██╔══██╗██║     ██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔═══██╗
-                                                    ██████╔╝ ╚████╔╝     █████╔╝ ███████║██║     ██║██████╔╝██████╔╝███████║██║  ██║██║   ██║
-                                                    ██╔══██╗  ╚██╔╝      ██╔═██╗ ██╔══██║██║     ██║██╔══██╗██╔══██╗██╔══██║██║  ██║██║   ██║
-                                                    ██████╔╝   ██║       ██║  ██╗██║  ██║███████╗██║██████╔╝██║  ██║██║  ██║██████╔╝╚██████╔╝
-                                                    ╚═════╝    ╚═╝       ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝
-    """)
-
     # Start the main function
     main()

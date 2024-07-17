@@ -43,7 +43,7 @@ import os
 from pyarr import RadarrAPI
 from modules.logger import Logger
 from modules.utils import Utils
-
+from modules.exceptions import InsufficientDiskSpaceError
 
 def radarr(logger: Logger, config: dict, utils: Utils) -> None:
     """
@@ -57,15 +57,15 @@ def radarr(logger: Logger, config: dict, utils: Utils) -> None:
     api = config.get("RADARR_API", None)
 
     if host is None or api is None:
-        logger.warning("[ RADARR ]", "Warning: {warning}", Warning=" the radarr application is not configured in the yaml file ")
+        logger.warning("Warning « {warning} ».", Warning=" the radarr application is not configured in the yaml file ")
         return
 
     try:
         # Initialize Radarr API
         radarr_api = RadarrAPI(host, api)
 
-        logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
-        logger.info("[ RADARR ]", "Movie trailer finder started.")
+        print("--------------------------------")
+        logger.info("Movie trailers finder started.")
 
         # Iterate through all movies in Radarr
         for movie in radarr_api.get_movie():
@@ -80,7 +80,7 @@ def radarr(logger: Logger, config: dict, utils: Utils) -> None:
 
             if path is None or title is None:
                 # radarr item dont have path or title
-                logger.error("[ RADARR ]", "Warning: {warning}", warning=f"Path or Title not exist in: {movie}")
+                logger.error("Warning « {warning} ».", warning=f"Path or Title not exist in: {movie}")
                 continue
 
             movie["outputs_folder"] = os.path.join(movie["path"], config["APP_DEFAULT_DIR"])
@@ -91,45 +91,48 @@ def radarr(logger: Logger, config: dict, utils: Utils) -> None:
             if custom_path and custom_name:
                 movie["outputs_folder"] = os.path.join(custom_path, custom_name, title)
 
-            outputs_folder = movie["outputs_folder"]
             # create ooutputs folder if not exist
-            os.makedirs(outputs_folder, exist_ok=True)
+            os.makedirs(movie["outputs_folder"], exist_ok=True)
 
-            # Skip if not enough space
-            if not utils.check_space(outputs_folder):
+            try:
+                # Skip if not enough space
+                utils.check_space(movie["outputs_folder"])
+            except InsufficientDiskSpaceError as err:
+                logger.error("An error has occurred: {error}.", error=err)
                 continue
 
-            logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
+            print("--------------------------------")
 
             # outputs list dir
-            trailers_in_outputs_folder = os.listdir(outputs_folder)
+            trailers_in_outputs_folder = os.listdir(movie["outputs_folder"])
 
             # count trailers in ouputs
             count = len(trailers_in_outputs_folder)
 
             # Skip if trailer already exists
             if config["APP_ONLY_ONE_TRAILER"] and count >= 1:
-                logger.success("\t ->", "{title} ({year}) already has {count} trailers.", title=title, year=year, count=count)
+                logger.success("« {title} » already has « {count} » trailers.", title=title, year=year, count=count)
                 continue
 
-            logger.info("\t ->", "Looking for {title} ({year}) trailers", title=title, year=year)
+            logger.info("Search trailers for « {title} ».", title=title, year=year)
+
             # Fetch trailers using TMDB ID
             movie["query_type"] = "TMDB API"
             trailers = utils.trailer_pull(movie["tmdbId"], "movie")
             list_of_trailers = utils.get_new_trailers(trailers, trailers_in_outputs_folder)
             # No trailers found
-            if len(list_of_trailers) == 0:
-                logger.warning("\t\t ->", "No trailers available on {query}", query=movie["query_type"])
+            if len(list_of_trailers) != 0:
+                logger.warning("No trailers were found with « {query} ».", query=movie["query_type"])
                 link = {
                     "name": movie["use_title"],
                     "yt_link": f"gvsearch5:{movie['use_title']} {config.get('YT_DLP_SEARCH_KEYWORD')}",
                 }
                 list_of_trailers = [link]
-                logger.info("\t\t ->", "Search trailer with {query}", query=link["yt_link"])
+                logger.info("Search trailers with « {query} ».", query=link["yt_link"])
                 movie["query_type"] = link["yt_link"]
             utils.download_trailers(list_of_trailers, movie)
 
-        logger.info("[ RADARR ]", "Movie trailer finder ended.")
-        logger.info("\t", "{msg_gen}", msg_gen="--------------------------------")
-    except Exception as err:
-        logger.error("[ RADARR ]", "An error occurred: {error}", error=err)
+        logger.info("Movie trailers finder ended.")
+        print("--------------------------------")
+    except AssertionError as err:
+        logger.error("An error has occurred: {error}.", error={"error": err, "host": host})

@@ -38,6 +38,7 @@ Usage example:
 
 from time import sleep
 import sys
+from datetime import datetime
 from modules.translator import Translator
 
 # Console colors for log messages
@@ -56,7 +57,7 @@ class Logger(Translator):
         APP_TRANSLATE (str): The default language locale for translations.
     """
 
-    def __init__(self, local="en"):
+    def __init__(self, local="en", date_format="%Y-%m-%d %H:%M:%S"):
         """
         Initializes the Logger with a default locale.
 
@@ -64,6 +65,7 @@ class Logger(Translator):
             local (str): The default language locale for translations. Default is 'en'.
         """
         super().__init__(local)
+        self.date_format = date_format
 
     def _log(self, color: str, msg: str):
         """
@@ -73,55 +75,51 @@ class Logger(Translator):
             color (str): The color code for the message.
             msg (str): The message to log.
         """
-        sys.stdout.write(f"{color} {msg} {RESET}")
-        sys.stdout.write("\n")
+        current_time = datetime.now().strftime(self.date_format)
+        sys.stdout.write(f"[ {current_time} ] -> {color} {msg} {RESET} \n")
         sys.stdout.flush()
-        #sleep(0.5)
+        sleep(0.5)  # Wait 0.5s to avoid excessive CPU load
 
-    def info(self, prefix=" ", msg_key="", **kwargs):
+    def info(self, msg_key="", **kwargs):
         """
         Logs an informational message.
 
         Args:
-            prefix (str): The prefix to add before the message. Default is a space.
             msg_key (str): The key for the message to translate.
             **kwargs: Additional arguments for the translation.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(WHITE, f"{prefix} {msg}")
+        self._log(WHITE, msg)
 
-    def success(self, prefix=" ", msg_key="", **kwargs):
+    def success(self, msg_key="", **kwargs):
         """
         Logs a success message.
 
         Args:
-            prefix (str): The prefix to add before the message. Default is a space.
             msg_key (str): The key for the message to translate.
             **kwargs: Additional arguments for the translation.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(GREEN, f"{prefix} {msg}")
+        self._log(GREEN, msg)
 
-    def warning(self, prefix=" ", msg_key="", **kwargs):
+    def warning(self, msg_key="", **kwargs):
         """
         Logs a warning message.
 
         Args:
-            prefix (str): The prefix to add before the message. Default is a space.
             msg_key (str): The key for the message to translate.
             **kwargs: Additional arguments for the translation.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(WARN, f"{prefix} {msg}")
+        self._log(WARN, msg)
 
-    def error(self, prefix=" ", msg_key="", **kwargs):
+    def error(self, msg_key="", **kwargs):
         """
         Logs an error message.
 
         Args:
-            prefix (str): The prefix to add before the message. Default is a space.
             msg_key (str): The key for the message to translate.
             **kwargs: Additional arguments for the translation.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(RED, f"{prefix} {msg}")
+        self._log(RED, msg)

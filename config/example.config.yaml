@@ -3,6 +3,9 @@
 # Key to use for movie/tv show title from *arr: title, originalTitle, sortTitle, cleanTitle
 APP_USE_TITLE: "originalTitle"
 
+# Format date for log output
+APP_LOG_DATE_FORMAT: "%Y-%m-%d %H:%M:%S"
+
 # Limit to one trailer per item; last trailer is downloaded
 APP_ONLY_ONE_TRAILER: true
 
@@ -98,8 +101,8 @@ YT_DLP_SEARCH_KEYWORD_SEASON: "{show} Season {season_number}"
 # For example, to search for the official trailer of Season 3 of the show "Stranger Things",
 # the final search query will be "Stranger Things Season 3 official trailer".
 
-# Set this for waiting time between yt_dlp requests
-YT_DLP_INTERVAL_RESQUESTS: 0
+# Set this for waiting time between yt_dlp requests (seconds)
+YT_DLP_INTERVAL_RESQUESTS: 6
 
 # Preferred format for downloading videos
 YT_DLP_FORMAT: "bestvideo+bestaudio"
