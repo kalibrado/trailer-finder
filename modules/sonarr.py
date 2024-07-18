@@ -96,9 +96,16 @@ def sonarr(logger: Logger, config: dict, utils: Utils):
                     show["use_title"] = title_format.format(show=title, season_number=season["seasonNumber"])
                     show["trailers_dest"] = os.path.join(show["trailers_dest"], show["use_title"])
 
-                    os.makedirs(show["trailers_dest"], exist_ok=True)
 
-                    trailers_in_outputs_folder = os.listdir(show["trailers_dest"])
+                    os.makedirs(show["outputs_folder"], exist_ok=True)
+                    try:
+                        # Skip if not enough space
+                        utils.check_space(show["outputs_folder"])
+                    except InsufficientDiskSpaceError as err:
+                        logger.error("An error has occurred: {error}.", error=err)
+                        continue
+                     
+                    trailers_in_outputs_folder = os.listdir(show["outputs_folder"])
                     count = len(trailers_in_outputs_folder)
 
                     if config["APP_ONLY_ONE_TRAILER"] and count >= 1:
