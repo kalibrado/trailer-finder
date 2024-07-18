@@ -1,4 +1,4 @@
-radarr module
+Radarr Module
 =============
 
 .. automodule:: modules.radarr

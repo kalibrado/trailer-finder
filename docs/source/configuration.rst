@@ -1,0 +1,137 @@
+Configuration
+=============
+
+Trailer Finder's configuration is managed using a `config.yaml` file located in the `config` directory. Here's an example structure of the configuration file:
+
+.. code-block:: yaml
+
+   # General Application Settings
+   
+   # Key to use for movie/tv show title from *arr: title, originalTitle, sortTitle, cleanTitle
+   APP_USE_TITLE: "originalTitle"
+   
+   # Limit to one trailer per item; last trailer is downloaded
+   APP_ONLY_ONE_TRAILER: true
+   
+   # Time to wait between executions, in hours
+   APP_SLEEP_TIME: 6
+   
+   # Minimum required free disk space in GB
+   APP_FREE_SPACE_GB: 5
+   
+   # Default language for translation (e.g., en for English)
+   APP_TRANSLATE: en
+   
+   # Quiet mode flag, suppresses some logs for yt_dlp and ffmpeg process
+   APP_QUIET_MODE: false
+   
+   # Default directory for trailers; e.g., /path/of/radarr or sonarr/Name/backdrops/
+   APP_DEFAULT_DIR: "backdrops"
+   
+   # Set this if you want to save trailers in a specific path
+   APP_CUSTOM_PATH: ""
+   
+   # Custom name for TV show trailers (valid if APP_CUSTOM_PATH is set)
+   APP_CUSTOM_NAME_SHOW: "TV Show Trailer"
+   
+   # Custom name for movie trailers (valid if APP_CUSTOM_PATH is set)
+   APP_CUSTOM_NAME_MOVIE: "Movies Trailers"
+   
+   # Configuration for Sonarr
+   
+   # Sonarr host address
+   SONARR_HOST: "http://localhost:8989"
+   
+   # Sonarr API key
+   SONARR_API: "your_SONARR_API_key"
+   
+   # Configuration for Radarr
+   
+   # Radarr host address
+   RADARR_HOST: "http://localhost:7878"
+   
+   # Radarr API key
+   RADARR_API: "your_RADARR_API_key"
+   
+   # TMDB API Configuration (The Movie Database)
+   
+   # TMDB API key
+   TMDB_API_KEY: "your_TMDB_API_KEY"
+   
+   # Type of media to separate by '|' (e.g., "Trailer|Featurette|Clip")
+   TMDB_TYPE_ITEM: "Trailer"
+   
+   # Only fetch official trailers
+   TMDB_OFFICIAL: true
+   
+   # Default size (pixels) for trailers
+   TMDB_SIZE: 1080
+   
+   # Only accept trailers from YouTube as a source
+   TMDB_SOURCE: "YouTube"
+   
+   # Default language for trailers (e.g., en-US for English)
+   TMDB_LANGUAGE_TRAILER: en-US
+   
+   # Settings for downloading with Youtube-DL
+   
+   # Base URL for YouTube links
+   YT_DLP_BASE_URL: "https://www.youtube.com/watch?v="
+   
+   # YouTube username for authentication
+   YT_DLP_AUTH_USER: "your_youtube_username"
+   
+   # YouTube password for authentication
+   YT_DLP_AUTH_PASS: "your_youtube_password"
+   
+   # Disable warnings
+   YT_DLP_NO_WARNINGS: true
+   
+   # Skip video intros
+   YT_DLP_SKIP_INTROS: true
+   
+   # Maximum acceptable video duration in seconds
+   YT_DLP_MAX_LENGTH: 200
+   
+   # Base keyword for general official trailers
+   YT_DLP_SEARCH_KEYWORD: "official trailer"
+   
+   # Keyword template for searching season-specific trailers
+   YT_DLP_SEARCH_KEYWORD_SEASON: "{show} Season {season_number}"
+   
+   # Comment:
+   # YT_DLP_SEARCH_KEYWORD_SEASON will be concatenated with YT_DLP_SEARCH_KEYWORD
+   # to search for official season trailers on YouTube.
+   # For example, to search for the official trailer of Season 3 of the show "Stranger Things",
+   # the final search query will be "Stranger Things Season 3 official trailer".
+   
+   # Set this for waiting time between yt_dlp requests
+   YT_DLP_INTERVAL_RESQUESTS: 0
+   
+   # Preferred format for downloading videos
+   YT_DLP_FORMAT: "bestvideo+bestaudio"
+   
+   # Segments to remove from trailers using yt_dlp
+   YT_DLP_SPONSORS_BLOCK:
+      - "sponsor"
+      - "intro"
+      - "outro"
+      - "selfpromo"
+      - "preview"
+      - "filler"
+      - "interaction"
+   
+   # Settings for ffmpeg
+   
+   # Number of threads for processing
+   FFMPEG_THREAD_COUNT: 4
+   
+   # Buffer size for FFMPEG
+   FFMPEG_BUFFER_SIZE: "1M"
+   
+   # Output file type for trailers
+   FFMPEG_FILE_TYPE: "mkv"
+   
+   # Template for FFMPEG command used for processing videos
+   # WARNING: Modify this template with caution. Changes may impact script functionality.
+   FFMPEG_COMMAND_TEMPLATE: "ffmpeg -i '{path}' -threads {thread} -c:v copy -c:a aac -af volume=-7dB -bufsize {buffer} -preset slow -y '{path_file}'"

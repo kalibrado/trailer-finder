@@ -1,5 +1,6 @@
-translator module
+Translator Module
 =================
+
 
 .. automodule:: modules.translator
    :members:

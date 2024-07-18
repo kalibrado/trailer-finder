@@ -1,7 +1,9 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../../.'))
+sys.path.insert(0, os.path.abspath('../../modules'))
+sys.path.insert(0, os.path.abspath('../../config'))
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -9,34 +11,25 @@ sys.path.insert(0, os.path.abspath('../../'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
-project = 'Trailer Finder'
-copyright = '2024, Kalibrado'
-author = 'Kalibrado'
-release = 'v1.5.8'
+project = "Trailer Finder"
+copyright = "2024, Kalibrado"
+author = "Kalibrado"
+release = "v1.5.8"
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.todo",
     "sphinx.ext.githubpages",
-    'sphinx.ext.autosummary',  # Create neat summary tables
+    "sphinx.ext.autosummary",
 ]
 
-autosummary_generate = True  # Turn on sphinx.ext.autosummary
-templates_path = ['_templates']
-exclude_patterns = []
-master_doc = "index"
-source_suffix = [".rst"]
-
+autosummary_generate = True
+templates_path = ["_templates"]
+exclude_patterns = ["_build", ".venv", "**/site-packages/**"]
 
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-html_theme = 'alabaster'
-html_static_path = ['_static']
+html_theme = "alabaster"
+html_static_path = ["_static"]
