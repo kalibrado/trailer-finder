@@ -14,7 +14,7 @@
   "Trailer download from « {link} » for « {title} ».": "« {title} » için « {link} » adresinden treler indiriliyor.",
   "There is no cache folder for « {title} ».": "« {title} » için önbellek klasörü bulunmuyor.",
   "« {path} » does not have enough disk space. Only « {free_gb} »  GB are available.": "« {path} » yeterli disk alanına sahip değil. Yalnızca « {free_gb} » GB kullanılabilir.",
-  "An error has occurred: {error}.": "Bir hata oluştu: {error}.",
+  "An error has occurred « {error} ».": "Bir hata oluştu « {error} ».",
   "The file « {name} » is not in the « {path} ».": "« {name} » dosyası « {path} » içinde bulunmuyor.",
   "Warning « {warning} ».": "Uyarı « {warning} ».",
   "No trailer is available for « {title} ».": "« {title} » için hiçbir treler bulunamadı.",
@@ -25,5 +25,6 @@
   "The ffmpeg command has an error « {error} ».": "ffmpeg komutu bir hata üretti « {error} ».",
   "Program interruption detected. Shutdown in progress...": "Program kesintisi tespit edildi. Kapatma işlemi devam ediyor...",
   "Trailer « {title} » is greater than « {duration} ».": "« {title} » treli « {duration} » süresinden daha uzun.",
-  "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH tanımlanmamış. Tüm treler uzunluklarına bakılmaksızın indirilecek."
+  "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH tanımlanmamış. Tüm treler uzunluklarına bakılmaksızın indirilecek.",
+  "{app} not configured.": "Lütfen « {app} » uygulamasının config.yaml dosyasında yapılandırılmadığını unutmayın"
 }

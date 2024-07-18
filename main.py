@@ -1,8 +1,41 @@
 """
-main.py
+Main script to run Sonarr and Radarr processes for finding and downloading trailers.
 
-This script runs Sonarr and Radarr processes to find and download trailers for movies and TV shows.
-It utilizes configuration from 'config/config.yaml' and logs events using a Logger instance.
+This script executes Sonarr and Radarr processes in a loop to find and download trailers
+for both TV shows and movies. It utilizes configurations from 'config/config.yaml' for
+customizing settings such as API keys, file paths, and sleep duration between runs.
+Events and errors are logged using a Logger instance configured with localization and
+date formatting settings from the configuration file.
+
+Dependencies:
+    - os: Operating system interface for file operations and clearing console screen.
+    - sys: System-specific parameters and functions.
+    - time.sleep: Function to pause execution for a specified amount of time.
+    - yaml: Library for reading YAML configuration files.
+    - modules.sonarr.sonarr: Module for interacting with Sonarr API to find and download TV show trailers.
+    - modules.radarr.radarr: Module for interacting with Radarr API to find and download movie trailers.
+    - modules.logger.Logger: Logger instance for logging messages.
+    - modules.utils.Utils: Utility functions instance for handling trailer downloads and processing.
+    - modules.exceptions.FfmpegError: Exception raised for errors related to FFMPEG processing.
+    - modules.exceptions.FfmpegCommandMissing: Exception raised when FFMPEG command is missing in configuration.
+
+Functions:
+    - main():
+        Main function to run Sonarr and Radarr processes for finding and downloading trailers.
+
+Usage:
+    This script is intended to be executed directly to continuously run processes that find and
+    download trailers for movies and TV shows managed by Radarr and Sonarr respectively. It uses
+    configurations from 'config/config.yaml' to customize behavior such as file paths, API keys,
+    and sleep duration between runs. Ensure 'config/config.yaml' is correctly configured before
+    running the script.
+
+Example:
+    To run this script:
+    ```bash
+    python main.py
+    ```
+    Ensure 'config/config.yaml' is present and correctly configured to avoid errors during execution.
 """
 
 import os
@@ -31,45 +64,50 @@ def main():
     # Check if the configuration file exists
     if not os.path.exists("config/config.yaml"):
         # Log an error if the configuration file does not exist and terminate the script
-        logger.error("File {name} not exist in {path}", name="config.yaml", path="config/")
+        logger.error("File {name} does not exist in {path}", name="config.yaml", path="config/")
         return
 
     # Load configuration from the YAML file
     with open("config/config.yaml", "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-        # Initialize Logger with a specific localization setting from config.yaml
-        logger = Logger(local=config.get("APP_TRANSLATE"), date_format=config.get("APP_LOG_DATE_FORMAT"))
+    # Initialize Logger with a specific localization setting from config.yaml
+    logger = Logger(local=config.get("APP_TRANSLATE"), date_format=config.get("APP_LOG_DATE_FORMAT"))
 
-        # Initialize Utils object to provide utility methods for operations
-        utils = Utils(logger, config)
-        try:
-            # Infinite loop to continuously run the processes
-            while True:
-                # Log the start of the trailer finding process
-                logger.info("Starting trailers finder.")
+    # Initialize Utils object to provide utility methods for operations
+    utils = Utils(logger, config)
 
-                # Run the Radarr process to find and download movie trailers
-                radarr(logger, config, utils)
+    try:
+        # Infinite loop to continuously run the processes
+        while True:
+            # Log the start of the trailer finding process
+            logger.info("Starting trailers finder.")
 
-                # Run the Sonarr process to find and download TV show trailers
-                sonarr(logger, config, utils)
+            # Run the Radarr process to find and download movie trailers
+            radarr(logger, config, utils)
 
-                # Log a separator line between runs
-                print("--------------------------------")
+            # Run the Sonarr process to find and download TV show trailers
+            sonarr(logger, config, utils)
 
-                # Sleep for the specified duration before the next run
-                time = config["APP_SLEEP_TIME"]
-                logger.info("Please wait for « {hours} » hours.", hours=time)
-                sleep(time * 3600)  # Convert hours to seconds for sleep function
-                # Clear the console screen for better readability
-                os.system("clear")
-        except (FfmpegError, FfmpegCommandMissing) as err:
-            logger.error("An error has occurred: {error}.", error=err)
-        except KeyboardInterrupt:
-            logger.error("Program interruption detected. Shutdown in progress...")
-        finally:
-            sys.exit(0)
+            # Log a separator line between runs
+            print("--------------------------------")
+
+            # Sleep for the specified duration before the next run
+            time = config["APP_SLEEP_TIME"]
+            logger.info("Please wait for {hours} hours.", hours=time)
+            sleep(time * 3600)  # Convert hours to seconds for sleep function
+
+            # Clear the console screen for better readability
+            os.system("clear")
+
+    except (FfmpegError, FfmpegCommandMissing) as err:
+        logger.error("An error has occurred: {error}.", error=err)
+
+    except KeyboardInterrupt:
+        logger.error("Program interruption detected. Shutdown in progress...")
+
+    finally:
+        sys.exit(0)
 
 
 if __name__ == "__main__":

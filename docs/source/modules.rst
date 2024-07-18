@@ -1,8 +1,14 @@
-trailer-finder
-==============
+Modules
+=======
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
+   :caption: Contents:
 
-   conf
-   main
+   modules/logger
+   modules/radarr
+   modules/sonarr
+   modules/translator
+   modules/utils
+   modules/youtube_dl
+   modules/exceptions

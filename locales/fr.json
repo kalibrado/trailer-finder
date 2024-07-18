@@ -14,7 +14,7 @@
       "Trailer download from « {link} » for « {title} ».": "Téléchargement de la bande-annonce depuis « {link} » pour « {title} ».",
       "There is no cache folder for « {title} ».": "Il n'y a pas de dossier cache pour « {title} ».",
       "« {path} » does not have enough disk space. Only « {free_gb} » GB are available.": "« {path} » n'a pas assez d'espace disque. Seulement « {free_gb} » Go sont disponibles.",
-      "An error has occurred: {error}.": "Une erreur est survenue: {error}.",
+      "An error has occurred « {error} ».": "Une erreur est survenue « {error} ».",
       "The file « {name} » is not in the « {path} ».": "Le fichier « {name} » n'est pas dans le dossier « {path} ».",
       "Warning « {warning} ».": "Avertissement « {warning} ».",
       "No trailer is available for « {title} ».": "Aucune bande-annonce disponible pour « {title} ».",
@@ -25,5 +25,6 @@
       "The ffmpeg command has an error « {error} ».": "La commande ffmpeg a une erreur « {error} ».",
       "Program interruption detected. Shutdown in progress...": "Interruption du programme détectée. Arrêt en cours...",
       "Trailer « {title} » is greater than « {duration} ».": "La bande-annonce « {title} » dépasse « {duration} ».",
-      "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH n'est pas défini. Toutes les bandes-annonces seront téléchargées quelle que soit leur durée."
+      "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH n'est pas défini. Toutes les bandes-annonces seront téléchargées quelle que soit leur durée.",
+      "{app} not configured.": "Veuillez noter que « {app} » n'est pas configurée dans le fichier config.yaml"
 }

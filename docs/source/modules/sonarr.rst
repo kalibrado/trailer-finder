@@ -1,4 +1,4 @@
-sonarr module
+Sonarr Module
 =============
 
 .. automodule:: modules.sonarr

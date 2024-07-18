@@ -1,9 +1,7 @@
-
 # Trailer Finder
 [![Semgrep](https://github.com/kalibrado/trailer-finder/actions/workflows/semgrep.yml/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/semgrep.yml)
 [![Dependabot Updates](https://github.com/kalibrado/trailer-finder/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/dependabot/dependabot-updates)
 [![CodeQL](https://github.com/kalibrado/trailer-finder/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/github-code-scanning/codeql)
-
 
 [!["Buy Me A Beer"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/leonardofod)
 
@@ -42,26 +40,28 @@ Trailer Finder is a versatile automation tool designed to streamline the process
       - [3. **Sonarr Module**](#3-sonarr-module)
       - [4. **Translator Module**](#4-translator-module)
       - [5. **Utils Module**](#5-utils-module)
-      - [6. **YoutubeDL Module**](#6-youtubedl-module)
+      - [6. **YoutubeDL Module**](#6-youtube_dl-module)
     - [Error Handling](#error-handling)
-    - [Contributing](./CONTRIBUTING.md#contributing)
-      - [Ways to Contribute](./CONTRIBUTING.md#ways-to-contribute)
-      - [Getting Started](./CONTRIBUTING.md#getting-started)
-        - [1. Fork the Repository](./CONTRIBUTING.md#1-fork-the-repository)
-        - [2. Clone the Repository](./CONTRIBUTING.md#2-clone-the-repository)
-        - [3. Create a New Branch](./CONTRIBUTING.md#3-create-a-new-branch)
-        - [4. Make Changes](./CONTRIBUTING.md#4-make-changes)
-        - [5. Test Your Changes](./CONTRIBUTING.md#5-test-your-changes)
-        - [6. Commit Your Changes](./CONTRIBUTING.md#6-commit-your-changes)
-        - [7. Push Your Changes](./CONTRIBUTING.md#7-push-your-changes)
-        - [8. Create a Pull Request](./CONTRIBUTING.md#8-create-a-pull-request)
-        - [9. Describe Your Pull Request](./CONTRIBUTING.md#9-describe-your-pull-request)
-        - [10. Review and Discuss](./CONTRIBUTING.md#10-review-and-discuss)
-        - [11. Merge Your Pull Request](./CONTRIBUTING.md#11-merge-your-pull-request)
-      - [Code Style](#code-style)
-      - [Report Issues](#report-issues)
-      - [Acknowledgements](#acknowledgements)
+  - [Contributing](#contributing)
+    - [Ways to Contribute](#ways-to-contribute)
+    - [Getting Started](#getting-started)
+      - [1. Fork the Repository](#1-fork-the-repository)
+      - [2. Clone the Repository](#2-clone-the-repository)
+      - [3. Create a New Branch](#3-create-a-new-branch)
+      - [4. Make Changes](#4-make-changes)
+      - [5. Test Your Changes](#5-test-your-changes)
+      - [6. Commit Your Changes](#6-commit-your-changes)
+      - [7. Push Your Changes](#7-push-your-changes)
+      - [8. Create a Pull Request](#8-create-a-pull-request)
+      - [9. Describe Your Pull Request](#9-describe-your-pull-request)
+      - [10. Review and Discuss](#10-review-and-discuss)
+      - [11. Merge Your Pull Request](#11-merge-your-pull-request)
+    - [Code Style](#code-style)
+    - [Report Issues](#report-issues)
+    - [Acknowledgements](#acknowledgements)
     - [Docker](#docker)
+      - [Using Docker](#using-docker)
+      - [Using Docker Compose](#using-docker-compose)
   - [Troubleshooting](#troubleshooting)
   - [License](#license)
 
@@ -240,13 +240,14 @@ FFMPEG_THREAD_COUNT: 4
 # Buffer size for FFMPEG
 FFMPEG_BUFFER_SIZE: "1M"
 
-# Output file type for trailers
+#
+
+ Output file type for trailers
 FFMPEG_FILE_TYPE: "mkv"
 
 # Template for FFMPEG command used for processing videos
 # WARNING: Modify this template with caution. Changes may impact script functionality.
 FFMPEG_COMMAND_TEMPLATE: "ffmpeg -i '{path}' -threads {thread} -c:v copy -c:a aac -af volume=-7dB -bufsize {buffer} -preset slow -y '{path_file}'"
-
 ```
 
 ---
@@ -299,10 +300,22 @@ FFMPEG_COMMAND_TEMPLATE: "ffmpeg -i '{path}' -threads {thread} -c:v copy -c:a aa
 
 ---
 
+## Contributing
 
-#####
+We welcome contributions to Trailer Finder! Please follow these steps to contribute:
 
- 2. Clone the Repository
+### Ways to Contribute
+
+- **Bug Reports & Feature Requests**: Open an issue on GitHub.
+- **Code Contributions**: Fork the repository, make changes, and submit a pull request.
+
+### Getting Started
+
+#### 1. Fork the Repository
+
+Fork the Trailer Finder repository on GitHub.
+
+#### 2. Clone the Repository
 
 Clone your fork of the repository to your local machine:
 
@@ -311,7 +324,7 @@ git clone https://github.com/kalibrado/trailer-finder.git
 cd trailer-finder
 ```
 
-##### 3. Create a New Branch
+#### 3. Create a New Branch
 
 Create a new branch for your contribution:
 
@@ -319,15 +332,15 @@ Create a new branch for your contribution:
 git checkout -b feature/your-feature
 ```
 
-##### 4. Make Changes
+#### 4. Make Changes
 
 Make your changes or additions to the codebase. Ensure your changes adhere to the coding style and guidelines used in the project.
 
-##### 5. Test Your Changes
+#### 5. Test Your Changes
 
 Test your changes thoroughly to ensure they work as expected. If you've added new features or fixed bugs, write tests to cover your code.
 
-##### 6. Commit Your Changes
+#### 6. Commit Your Changes
 
 Once you are satisfied with your changes, commit them with a clear and descriptive commit message:
 
@@ -335,7 +348,7 @@ Once you are satisfied with your changes, commit them with a clear and descripti
 git commit -am 'Add feature/improvement'
 ```
 
-##### 7. Push Your Changes
+#### 7. Push Your Changes
 
 Push your changes to your forked repository on GitHub:
 
@@ -343,34 +356,34 @@ Push your changes to your forked repository on GitHub:
 git push origin feature/your-feature
 ```
 
-##### 8. Create a Pull Request
+#### 8. Create a Pull Request
 
 Go to the GitHub repository page of Trailer Finder. You should see a prompt to create a pull request for the branch you just pushed. Click on "Compare & pull request" to initiate the pull request.
 
-##### 9. Describe Your Pull Request
+#### 9. Describe Your Pull Request
 
 Provide a clear description of your changes in the pull request. Include any relevant details about the changes made and why they are beneficial.
 
-##### 10. Review and Discuss
+#### 10. Review and Discuss
 
 Collaborate with maintainers and contributors through code reviews and discussions. Be responsive to feedback and be prepared to make further changes if needed.
 
-##### 11. Merge Your Pull Request
+#### 11. Merge Your Pull Request
 
 Once your pull request is approved and all discussions are resolved, a project maintainer will merge your changes into the main branch.
 
-#### Code Style
+### Code Style
 
 Follow the existing code style and conventions used in the project. This includes:
 
 - Python: PEP 8 style guide
 - Documentation: Use Markdown (.md) format with clear and concise explanations
 
-#### Report Issues
+### Report Issues
 
 If you encounter bugs, issues, or have suggestions for improvements, please [open an issue](https://github.com/kalibrado/trailer-finder/issues).
 
-#### Acknowledgements
+### Acknowledgements
 
 We appreciate all contributions to Trailer Finder, big or small! Thank you for helping to make this project better.
 
@@ -378,43 +391,41 @@ We appreciate all contributions to Trailer Finder, big or small! Thank you for h
 
 Use Docker to run Trailer Finder in an isolated environment:
 
-1. **Using Docker**
+#### Using Docker
 
-   Use your custom Docker image `ldfe/trailer-finder:tagname`:
+Use your custom Docker image `ldfe/trailer-finder:tagname`:
 
-   ```bash
-   docker pull ldfe/trailer-finder:tagname
-   docker run -d --name trailer-finder-app ldfe/trailer-finder:tagname
-   ```
+```bash
+docker pull ldfe/trailer-finder:tagname
+docker run -d --name trailer-finder-app ldfe/trailer-finder:tagname
+```
 
-2. **Using Docker Compose**
+#### Using Docker Compose
 
-   Use Docker Compose to manage Trailer Finder deployment with dependencies:
+Use Docker Compose to manage Trailer Finder deployment with dependencies:
 
-   Create a `docker-compose.yml` file:
+Create a `docker-compose.yml` file:
 
-   ```yaml
-        version: "3"
-        services:
-          trailer-finder:
-            image: ldfe/trailer-finder:latest
-            restart: always
-            security_opt:
-              - no-new-privileges:true
-            volumes:
-              - ./config.yaml:./config/config.yaml # Where the config file will be located
-              # the access path must correspond to those of radarr and sonarr
-              - /mnt/Media1:/mnt/Media1 # media folder 1
-              - /mnt/Media2:/mnt/Media1 # media folder 1
-   ```
+```yaml
+version: "3"
+services:
+  trailer-finder:
+    image: ldfe/trailer-finder:latest
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./config.yaml:./config/config.yaml # Where the config file will be located
+      # the access path must correspond to those of radarr and sonarr
+      - /mnt/Media1:/mnt/Media1 # media folder 1
+      - /mnt/Media2:/mnt/Media1 # media folder 2
+```
 
-   Launch the service with Docker Compose:
+Launch the service with Docker Compose:
 
-   ```bash
-   docker-compose up -d
-   ```
-
-
+```bash
+docker-compose up -d
+```
 
 ---
 
@@ -426,5 +437,3 @@ If you encounter issues, refer to the troubleshooting section in the documentati
 
 ## License
  This project is licensed under the [MIT License](./LICENSE).
-
-

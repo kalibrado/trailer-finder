@@ -1,56 +1,36 @@
 """
-Module for handling YouTube trailer downloads using yt-dlp.
+Module providing utility functions for handling trailers, downloading from YouTube, and post-processing with FFMPEG.
 
-This module defines the YoutubeDL class that utilizes yt-dlp to download trailers from YouTube
-based on provided links and configuration options.
+This module contains utility functions to interact with YouTube's API using `yt-dlp`, download trailers, and perform
+post-processing tasks using FFMPEG. It leverages configurations from `config.yaml` to customize behavior such as
+download formats, interval requests, and error handling.
+
+Dependencies:
+    - os: Operating system interface for file operations.
+    - yt_dlp: Library for downloading videos from YouTube.
+    - modules.logger.Logger: Logger instance for logging messages.
+    - modules.exceptions.DurationError: Exception raised when trailer duration exceeds the maximum length.
+    - modules.exceptions.DownloadError: Exception raised for errors during trailer downloads.
+    - modules.translator.Translator: Translator class for translating messages.
 
 Classes:
-    YoutubeDL: Class for downloading trailers using yt-dlp.
+    - YoutubeDL(Translator):
+        Class providing methods to handle trailer downloads from YouTube using yt-dlp.
 
-Usage Example:
+Attributes:
+    logger (Logger): Logger instance for logging messages.
+    config (dict): Configuration dictionary containing settings from `config.yaml`.
 
-    # Importing the YoutubeDL class
-    from modules.youtube_dl import YoutubeDL
-
-    # Initialize a logger instance (assuming 'logger' is already initialized)
-    logger = Logger()
-
-    # Example configuration dictionary
-    config = {
-        "YT_DLP_MAX_LENGTH": 600,  # Maximum allowed duration for trailers in seconds
-        "YT_DLP_FORMAT": "bestvideo+bestaudio",  # Preferred format for downloading
-        "YT_DLP_NO_WARNINGS": False,  # Disable yt-dlp warnings
-        "APP_QUIET_MODE": True,  # Enable quiet mode
-        "YT_DLP_INTERVAL_RESQUESTS": 2,  # Interval for sleep between requests
-        "APP_ONLY_ONE_TRAILER": True,  # Download only one trailer per item
-    }
-
-    # Initialize the YoutubeDL instance
-    youtube_dl = YoutubeDL(logger, config)
-
-    # Example item metadata
-    item = {
-        "use_title": "MovieTitle",  # Title of the movie
-    }
-
-    # Example trailer links (assuming 'links' is a list of dictionaries with 'name' and 'yt_link')
-    links = [
-        {"name": "Trailer1", "yt_link": "https://www.youtube.com/watch?v=video1"},
-        {"name": "Trailer2", "yt_link": "https://www.youtube.com/watch?v=video2"},
-    ]
-
-    # Download trailers using YoutubeDL
-    cache_path = youtube_dl.download_trailers(links, item)
-
-    # Process the downloaded trailers (example)
-    # Note: Implement post-processing or further handling as per your application needs
-
+Usage:
+    This module provides essential functions for downloading trailers from YouTube, processing them with FFMPEG,
+    and interacting with external APIs like TMDB. Ensure `config.yaml` is configured correctly with relevant API keys
+    and settings before running scripts that use these functions.
 """
 
 import os
 import yt_dlp
 from modules.logger import Logger
-from modules.exceptions import DurationError, DonwloadError
+from modules.exceptions import DurationError, DownloadError
 from modules.translator import Translator
 
 
@@ -75,7 +55,7 @@ class YoutubeDL(Translator):
         if d["status"] == "finished":
             self.logger.success("The download of the trailer « {title} » succeeded.", title=title)
         if d["status"] == "error":
-            raise DonwloadError(self.translate("The download of the trailer « {title} » failed.", title=title))
+            raise DownloadError(self.translate("The download of the trailer « {title} » failed.", title=title))
 
     def match_filter(self, info, *, incomplete):
         """
@@ -92,7 +72,13 @@ class YoutubeDL(Translator):
 
         if duration and (int(duration) > int(max_length)):
             title = info.get("title")
-            raise DurationError(self.translate("Trailer « {title} » is greater than « {duration} ».", title=title, duration=duration))
+            raise DurationError(
+                self.translate(
+                    "Trailer « {title} » is greater than « {duration} ».",
+                    title=title,
+                    duration=f"{duration}/{max_length}",
+                )
+            )
 
     def yt_dlp_process(self, link: dict, ytdl_opts: dict) -> None:
         """
@@ -150,11 +136,15 @@ class YoutubeDL(Translator):
                 ytdl_opts["outtmpl"] = f"{cache_path}/{title}.%(ext)s"
             else:
                 ytdl_opts["outtmpl"] = f"{cache_path}/{link['name']}"
+
+            self.logger.info("Search trailers with « {query} ».", query=link["query_type"])
             try:
                 ydl = yt_dlp.YoutubeDL(ytdl_opts)
                 self.logger.info("Trailer download from « {link} » for « {title} ».", title=f"{title}", link=link.get("yt_link"))
                 ydl.download(link.get("yt_link"))
-            except DonwloadError as e:
+                if len(os.listdir(cache_path)) == 0:
+                    self.logger.warning("No trailers were found with « {query} ».", query=link["query_type"])
+            except DownloadError as e:
                 self.logger.error("Unexpected error for {link}: {error}", link=f"{title} - {link}", error=str(e))
                 continue
         return cache_path
