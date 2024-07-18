@@ -1,66 +1,37 @@
 """
 Module providing utility functions for handling trailers, downloading from YouTube, and post-processing with FFMPEG.
 
-This module includes classes and functions for interacting with TMDB API, downloading trailers, and performing
-post-processing using FFMPEG.
+This module contains utility functions to handle trailers, download them from YouTube using `yt-dlp`, post-process
+using FFMPEG, and perform disk space checks. It integrates with configurations from `config.yaml` to customize behavior
+like search prefixes, custom paths, and API keys.
+
+Dependencies:
+    - os: Operating system interface for file operations.
+    - shutil: High-level file operations utility.
+    - re: Regular expression operations for string manipulation.
+    - datetime: Date and time handling.
+    - subprocess: Subprocess management for executing FFMPEG commands.
+    - requests: HTTP library for making requests to external APIs.
+    - urllib3: HTTP client utility for disabling SSL warnings.
+    - modules.logger.Logger: Logger instance for logging messages.
+    - modules.youtube_dl.YoutubeDL: Class for downloading trailers using `yt-dlp`.
+    - modules.exceptions.FfmpegError: Exception raised for errors during FFMPEG processing.
+    - modules.exceptions.FfmpegCommandMissing: Exception raised when FFMPEG command is not defined in `config.yaml`.
+    - modules.exceptions.InsufficientDiskSpaceError: Exception raised when there is insufficient disk space.
 
 Classes:
-    - Utils: Contains utility methods for trailer handling, downloading, and processing.
+    - Utils(Translator):
+        Class providing utility functions for handling trailers, downloading from YouTube, and post-processing with FFMPEG.
 
-Functions:
-    - replace_slash_backslash: Replaces forward slashes and backward slashes with spaces.
-    - get_title: Retrieves the title of an item from its metadata.
-    - trailer_pull: Retrieves trailer information from TMDB API.
-    - post_process: Performs post-processing on downloaded trailers using FFMPEG.
-    - download_trailers: Downloads trailers from YouTube using YoutubeDL.
-    - check_space: Checks available disk space for downloading and processing trailers.
-    - get_new_trailers: Retrieves trailer names that do not already exist in the specified folder.
-Example of usage:
+Attributes:
+    logger (Logger): Logger instance for logging messages.
+    config (dict): Configuration dictionary containing settings from `config.yaml`.
+    yt_downloader (YoutubeDL): Instance of YoutubeDL for downloading trailers using `yt-dlp`.
 
-# Importing Logger class and Utils module
-from modules.logger import Logger
-from modules.utils import Utils
-
-# Initializing the logger
-logger = Logger()
-config = {
-    "RADARR_USE_NAME": "originalTitle",
-    "TMDB_API_KEY": "your_tmdb_api_key_here",
-    # Other configurations here...
-}
-
-# Initializing an instance of Utils
-utils = Utils(logger, config)
-
-# Example usage to download trailers
-tmdb_id = "12345"
-item_type = "movie"
-
-# Fetching trailer information from TMDB
-trailers = utils.trailer_pull(tmdb_id, item_type)
-
-# Downloading trailers from YouTube
-item_metadata = {
-    "title": "Your Movie Title",
-    "year": 2024,
-    "path": "/path/to/movie",
-    "outputs_folder": "/path/to/output/folder",
-    # Other metadata here...
-}
-utils.download_trailers(trailers, item_metadata)
-
-# Checking available disk space before download
-download_path = "/path/to/download/trailers"
-has_enough_space = utils.check_space(download_path)
-
-if not has_enough_space:
-    print("Insufficient disk space. Unable to download trailers.")
-
-# Example usage to perform post-processing on downloaded trailers
-cache_path = "/path/to/cache/trailers"
-downloaded_files = ["trailer1.mp4", "trailer2.mp4", "trailer3.mp4"]
-utils.post_process(cache_path, downloaded_files, item_metadata)
-
+Usage:
+    This module provides essential utility functions for handling trailers, downloading from YouTube,
+    post-processing with FFMPEG, and performing disk space checks. It integrates with `config.yaml`
+    for customized behavior and settings. Ensure configurations are set correctly before using these functions.
 """
 
 import os
@@ -123,88 +94,78 @@ class Utils(Translator):
 
         return title
 
-    def trailer_pull(self, tmdb_id: str, item_type: str, seasonNumber=None) -> List[Dict[str, Union[str, bool, datetime]]]:
+    def trailer_pull(self, tmdb_id: str, item_type: str, item: dict, seasonNumber=None) -> List[Dict[str, Union[str, bool, datetime]]]:
         """
         Retrieve trailer information from TMDB API.
 
         :param tmdb_id: TMDB ID of the movie or TV show
         :param item_type: Type of item ('movie' or 'tv')
-        :param parent_mode: Flag for parent mode retrieval (TV)
+        :param seasonNumber: Season number (for TV shows)
+        :param item: Metadata of the item
         :return: List of cleaned trailer information
         """
-        # Log the process of getting trailer information
-        self.logger.info("Retrieving information about « {info} ».", info=f"TYPE: {item_type} ID: {tmdb_id}")
+
         base_link = "api.themoviedb.org/3"
         api_key = self.config["TMDB_API_KEY"]
 
-        # Construct the URL for TMDB API based on item type and TMDB ID
-        url = f"https://{base_link}/{item_type}/{tmdb_id}/videos"
         if seasonNumber:
             url = f"https://{base_link}/tv/{tmdb_id}/season/{seasonNumber}/videos"
+        else:
+            url = f"https://{base_link}/{item_type}/{tmdb_id}/videos"
 
         headers = {"accept": "application/json"}
+        self.logger.info("Retrieving information about « {info} ».", info=url)
 
-        # Make a GET request to TMDB API
-        response = requests.get(
-            url,
-            params={
-                "api_key": api_key,
-                "language": self.config["TMDB_LANGUAGE_TRAILER"],
-            },
-            headers=headers,
-            timeout=3000,
-            verify=False,
-        )
-
-        # Process the response from TMDB API
-        if 200 <= response.status_code < 300:
-            raw_trailers = response.json()
-            assert isinstance(raw_trailers, dict)
+        try:
+            response = requests.get(
+                url,
+                params={
+                    "api_key": api_key,
+                    "language": self.config["TMDB_LANGUAGE_TRAILER"],
+                },
+                headers=headers,
+                timeout=3000,
+                verify=False,
+            )
+            response.raise_for_status()
 
             trailers = []
-            # Extract relevant trailer information from the API response
+            raw_trailers = response.json()
+
             for trailer in raw_trailers.get("results", []):
-                # Check if the trailer meets the specified conditions
-                should_add_trailer = True
+                if self._should_add_trailer(trailer):
+                    trailer_data = {
+                        "query_type": f"API (TMDB) {url}",
+                        "yt_link": self.config["YT_DLP_BASE_URL"] + trailer["key"],
+                        "name": self.replace_slash_backslash(trailer["name"]),
+                        "published_at": datetime.strptime(trailer["published_at"], "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc),
+                    }
+                    trailers.append(trailer_data)
 
-                # Verify each condition only if it is present in the configuration
-                if self.config.get("TMDB_OFFICIAL", True):
-                    should_add_trailer = should_add_trailer and (trailer.get("official") == self.config.get("TMDB_OFFICIAL", True))
-
-                if self.config.get("TMDB_TYPE_ITEM", None):
-                    should_add_trailer = should_add_trailer and (trailer.get("type") in self.config.get("TMDB_TYPE_ITEM", None))
-
-                if self.config.get("TMDB_SIZE", None):
-                    should_add_trailer = should_add_trailer and (trailer.get("size") == self.config.get("TMDB_SIZE", None))
-
-                if self.config.get("TMDB_SOURCE", None):
-                    should_add_trailer = should_add_trailer and (trailer.get("site") == self.config.get("TMDB_SOURCE", None))
-
-                # If all specified conditions are met, process the trailer
-                if should_add_trailer:
-                    # Construct the YouTube link for the trailer using the base link
-                    # from the config and the trailer's key.
-                    trailer["yt_link"] = self.config["YT_DLP_BASE_URL"] + trailer["key"]
-                    # Replace any backslashes or forward slashes in the trailer's name.
-                    trailer["name"] = self.replace_slash_backslash(trailer["name"])
-                    # Parse the 'published_at' string to a datetime object with UTC timezone.
-                    trailer["published_at"] = datetime.strptime(trailer["published_at"], "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
-                    # Add the trailer to the list of trailers.
-                    trailers.append(trailer)
-
-            # Sort the list based on the proximity to the current datetime
             if self.config.get("APP_ONLY_ONE_TRAILER", False):
-                trailers = sorted(
-                    trailers,
-                    key=lambda x: abs(datetime.now(timezone.utc) - x["published_at"]),
-                )
+                trailers.sort(key=lambda x: abs(datetime.now(timezone.utc) - x["published_at"]))
 
             return trailers
 
-        # Handle warnings if the response status code is not in the 200-300 range
-        msg = f"{response.status_code} - {response.json().get('status_message', 'No message')}"
-        self.logger.warning("Warning « {warning} ».", warning=msg)
-        return []
+        except (requests.RequestException, ValueError) as e:
+            self.logger.error("Failed to retrieve trailers from TMDB API: {error}", error=str(e))
+            return []
+
+    def _should_add_trailer(self, trailer: dict) -> bool:
+        """
+        Determine if a trailer should be added based on configured conditions.
+
+        :param trailer: Dictionary containing trailer information
+        :return: True if the trailer meets all conditions, False otherwise
+        """
+        conditions = [
+            (self.config.get("TMDB_OFFICIAL", True), lambda x: x.get("official", False) == self.config.get("TMDB_OFFICIAL", True)),
+            (self.config.get("TMDB_TYPE_ITEM", None), lambda x: x.get("type") in self.config.get("TMDB_TYPE_ITEM", None)),
+            (self.config.get("TMDB_SIZE", None), lambda x: x.get("size") == self.config.get("TMDB_SIZE", None)),
+            (self.config.get("TMDB_SOURCE", None), lambda x: x.get("site") == self.config.get("TMDB_SOURCE", None)),
+        ]
+
+        return all(condition[0] is None or condition[1](trailer) for condition in conditions)
 
     def post_process(self, cache_path: str, files: List[str], item: Dict[str, str]) -> None:
         """
@@ -230,7 +191,7 @@ class Utils(Translator):
                 path=f"{cache_path}/{file}",
                 thread=self.config.get("FFMPEG_THREAD_COUNT", 4),
                 buffer=self.config.get("FFMPEG_BUFFER_SIZE", "1M"),
-                path_file=f"{item['outputs_folder']}/{filename}.{filetype}",
+                path_file=f"{item['trailers_dest']}/{filename}.{filetype}",
             )
 
             # Log the FFMPEG command used for processing
@@ -250,38 +211,40 @@ class Utils(Translator):
         # Always remove the cache_path after FFMPEG execution
         shutil.rmtree(cache_path)
 
-    def download_trailers(self, links: List[str], item: Dict[str, str]) -> None:
+    def download_trailers(self, links: List[dict], item: Dict[str, str]) -> None:
         """
         Download trailers from YouTube using YoutubeDL.
 
         :param links: List of YouTube trailer links
         :param item: Metadata of the item (movie or TV show)
         """
+
+        prefix_search = self.config.get("YT_SEARCH_PREFIX", [])
+
+        arr_id_trailer = item.get("youTubeTrailerId", None)
+        if arr_id_trailer:
+            link = {
+                "name": self.replace_slash_backslash(self.get_title(item)),
+                "yt_link": self.config["YT_DLP_BASE_URL"] + arr_id_trailer,
+                "query_type": f"*arr youTube id: {arr_id_trailer}",
+            }
+            links.append(link)
+
+        for prefix in prefix_search:
+            link = {
+                "name": self.replace_slash_backslash(self.get_title(item)),
+                "yt_link": f"{prefix}:{item['use_title']} {self.config.get('YT_DLP_SEARCH_KEYWORD', '')}",
+                "query_type": f"prefix: {prefix}",
+            }
+            links.append(link)
+
         cache_path = self.yt_downloader.download_trailers(links, item)
 
-        # Perform post-processing on downloaded files
         if os.path.exists(cache_path):
             files = os.listdir(cache_path)
-            if not files:
-                name = self.get_title(item)
-                self.logger.warning("No trailers were found with « {query} ».", query=item["query_type"])
-
-                link = {
-                    "name": self.replace_slash_backslash(name),
-                    "yt_link": f"ytsearch5:{item['use_title']} {self.config.get('YT_DLP_SEARCH_KEYWORD')}",
-                }
-
-                arr_id_trailer = item.get("youTubeTrailerId", None)
-                if arr_id_trailer:
-                    link["yt_link"] = self.config["YT_DLP_BASE_URL"] + arr_id_trailer
-                item["query_type"] = link["yt_link"]
-
-                self.logger.info("Search trailers with « {query} ».", query=item["query_type"])
-                cache_path = self.yt_downloader.download_trailers([link], item)
-                files = os.listdir(cache_path)
-
             if len(files) > 0:
                 self.post_process(cache_path, files, item)
+                return
 
     def check_space(self, path: str) -> bool:
         """

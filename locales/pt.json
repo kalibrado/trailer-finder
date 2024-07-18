@@ -25,5 +25,6 @@
     "The ffmpeg command has an error « {error} ».": "O comando ffmpeg apresentou um erro « {error} ».",
     "Program interruption detected. Shutdown in progress...": "Interrupção do programa detectada. Desligando...",
     "Trailer « {title} » is greater than « {duration} ».": "O trailer « {title} » é maior que « {duration} ».",
-    "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH não está definido. Todos os trailers serão baixados independentemente de sua duração."
+    "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH não está definido. Todos os trailers serão baixados independentemente de sua duração.",
+    "{app} not configured.": "Observe que « {app} » não está configurado no arquivo config.yaml."
 }

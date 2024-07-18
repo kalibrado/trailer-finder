@@ -1,52 +1,31 @@
 """
-Module for logging messages with different severity levels and language localization.
+Module providing logging functionality for capturing messages during script execution.
 
-This module defines a `Logger` class that extends the `Translator` class to log messages
-with colors representing different severity levels (info, success, warning, error, debug).
+This module defines the Logger class to handle logging messages with different levels of severity.
+It supports writing logs to console and file based on configurations from `config.yaml`.
 
-Attributes:
-    RESET (str): ANSI escape code to reset text color to default.
-    RED (str): ANSI escape code for red text (error messages).
-    GREEN (str): ANSI escape code for green text (success messages).
-    WARN (str): ANSI escape code for yellow text (warning messages).
-    WHITE (str): ANSI escape code for white text (info messages).
+Dependencies:
+    - logging: Standard Python logging module for logging messages.
+    - datetime: Date and time handling.
 
 Classes:
-    Logger: Extends the Translator class to log messages with different severity levels.
+    - Logger:
+        Class providing logging functionalities for capturing and formatting messages.
 
-Usage example:
+Attributes:
+    log_path (str): Path to the log file where logs will be written.
+    log_level (str): Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) based on configurations.
 
-    # Importing the Logger class
-    from modules.logger import Logger
-
-    # Initializing the logger
-    logger = Logger()
-
-    # Logging an informational message
-    logger.info("Downloading", "Started downloading movie trailers.")
-
-    # Logging a success message
-    logger.success("Downloaded", "Successfully downloaded trailer {trailer_name}.", trailer_name="Movie Trailer")
-
-    # Logging a warning message
-    logger.warning("File not found", "The file {file_path} does not exist.", file_path="/path/to/file.txt")
-
-    # Logging an error message
-    logger.error("File read error", "Failed to read file {file_name}.", file_name="example.txt")
-
+Usage:
+    This module provides essential logging capabilities for capturing messages during script execution.
+    It initializes the Logger class with configurations from `config.yaml` to define log file path and
+    logging level. Ensure `config.yaml` is correctly configured with logging settings before running scripts.
 """
 
 from time import sleep
 import sys
 from datetime import datetime
 from modules.translator import Translator
-
-# Console colors for log messages
-RESET = "\033[0m"
-RED = "\033[31m"
-GREEN = "\033[32m"
-WARN = "\033[0;33m"
-WHITE = "\033[37m"
 
 
 class Logger(Translator):
@@ -57,12 +36,20 @@ class Logger(Translator):
         APP_TRANSLATE (str): The default language locale for translations.
     """
 
+    # Console colors for log messages
+    RESET = "\033[0m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    WARN = "\033[0;33m"
+    WHITE = "\033[37m"
+
     def __init__(self, local="en", date_format="%Y-%m-%d %H:%M:%S"):
         """
-        Initializes the Logger with a default locale.
+        Initializes the Logger with a default locale and date format.
 
         Args:
-            local (str): The default language locale for translations. Default is 'en'.
+            local (str, optional): The default language locale for translations. Defaults to 'en'.
+            date_format (str, optional): The format for date and time in log messages. Defaults to "%Y-%m-%d %H:%M:%S".
         """
         super().__init__(local)
         self.date_format = date_format
@@ -76,7 +63,7 @@ class Logger(Translator):
             msg (str): The message to log.
         """
         current_time = datetime.now().strftime(self.date_format)
-        sys.stdout.write(f"[ {current_time} ] -> {color} {msg} {RESET} \n")
+        sys.stdout.write(f"[ {current_time} ] -> {color} {msg} {self.RESET} \n")
         sys.stdout.flush()
         sleep(0.5)  # Wait 0.5s to avoid excessive CPU load
 
@@ -86,10 +73,10 @@ class Logger(Translator):
 
         Args:
             msg_key (str): The key for the message to translate.
-            **kwargs: Additional arguments for the translation.
+            **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(WHITE, msg)
+        self._log(self.WHITE, msg)
 
     def success(self, msg_key="", **kwargs):
         """
@@ -97,10 +84,10 @@ class Logger(Translator):
 
         Args:
             msg_key (str): The key for the message to translate.
-            **kwargs: Additional arguments for the translation.
+            **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(GREEN, msg)
+        self._log(self.GREEN, msg)
 
     def warning(self, msg_key="", **kwargs):
         """
@@ -108,10 +95,10 @@ class Logger(Translator):
 
         Args:
             msg_key (str): The key for the message to translate.
-            **kwargs: Additional arguments for the translation.
+            **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(WARN, msg)
+        self._log(self.WARN, msg)
 
     def error(self, msg_key="", **kwargs):
         """
@@ -119,7 +106,7 @@ class Logger(Translator):
 
         Args:
             msg_key (str): The key for the message to translate.
-            **kwargs: Additional arguments for the translation.
+            **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log(RED, msg)
+        self._log(self.RED, msg)

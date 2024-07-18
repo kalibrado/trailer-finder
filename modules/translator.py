@@ -1,4 +1,38 @@
-"""modules/translator.py"""
+"""
+Module for handling language translations.
+
+This module provides functionality for translating messages into different languages
+based on loaded translation files. It supports various locales configured through
+the 'locales' directory. Translations are accessed using keys defined in these files.
+
+Dependencies:
+    - os: Operating system interface for file operations.
+    - json: Module for parsing JSON files used for translation storage.
+
+Classes:
+    - Translator:
+        A class to handle language translations based on loaded translation files.
+
+Attributes:
+    - APP_TRANSLATE (str): The default language locale.
+
+Methods:
+    - __init__(local="en"):
+        Initializes the Translator with a default locale and loads translation files.
+
+    - _load_translations():
+        Loads translation files from the 'locales' directory.
+
+    - translate(msg_key, **kwargs):
+        Translates a message key to the appropriate language string.
+
+Usage:
+    This module is designed to be used as a utility for translating messages and
+    text in different languages. It relies on a structured directory of JSON files
+    for translations. Ensure that the 'locales' directory contains JSON files with
+    appropriate translations before using this module.
+
+"""
 
 import os
 import json
