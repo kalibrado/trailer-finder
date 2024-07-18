@@ -81,7 +81,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class Utils(Translator):
-    def __init__(self, logger: Logger, config: Dict[str, Union[str, int, bool]]) -> None:
+    def __init__(self, logger: Logger, config: Dict[str, Union[str, int, bool, list]]) -> None:
         """
         Initialize Utils class with a logger and configuration.
 

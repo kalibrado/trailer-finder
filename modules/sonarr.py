@@ -7,7 +7,7 @@ This module interacts with Sonarr API to find and download trailers for TV serie
 import os
 from pyarr import SonarrAPI
 from modules.utils import Utils
-from modules.utils import InsufficientDiskSpaceError
+from modules.exceptions import InsufficientDiskSpaceError
 
 
 def sonarr(logger, config: dict, utils: Utils):
