@@ -1,6 +1,8 @@
+# Configuration file for Trailer Finder
+
 # General Application Settings
 
-# Key to use for movie/tv show title from *arr: title, originalTitle, sortTitle, cleanTitle
+# Key to use for movie/tv show title from *arr: title, originalTitle, sortTitle, cleanTitle or slugTitle
 APP_USE_TITLE: "originalTitle"
 
 # Format date for log output
@@ -95,11 +97,8 @@ YT_DLP_SEARCH_KEYWORD: "official trailer"
 # Keyword template for searching season-specific trailers
 YT_DLP_SEARCH_KEYWORD_SEASON: "{show} Season {season_number}"
 
-# Comment:
 # YT_DLP_SEARCH_KEYWORD_SEASON will be concatenated with YT_DLP_SEARCH_KEYWORD
 # to search for official season trailers on YouTube.
-# For example, to search for the official trailer of Season 3 of the show "Stranger Things",
-# the final search query will be "Stranger Things Season 3 official trailer".
 
 # Set this for waiting time between yt_dlp requests (seconds)
 YT_DLP_INTERVAL_RESQUESTS: 6

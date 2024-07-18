@@ -14,7 +14,7 @@
       "Trailer download from « {link} » for « {title} ».": "Download del trailer da « {link} » per « {title} ».",
       "There is no cache folder for « {title} ».": "Non c'è una cartella di cache per « {title} ».",
       "« {path} » does not have enough disk space. Only « {free_gb} » GB are available.": "« {path} » non ha abbastanza spazio su disco. Sono disponibili solo « {free_gb} » GB.",
-      "An error has occurred: {error}.": "Si è verificato un errore: {error}.",
+      "An error has occurred « {error} ».": "Si è verificato un errore « {error} ».",
       "The file « {name} » is not in the « {path} ».": "Il file « {name} » non è nella cartella « {path} ».",
       "Warning « {warning} ».": "Avviso « {warning} ».",
       "No trailer is available for « {title} ».": "Nessun trailer disponibile per « {title} ».",
@@ -25,5 +25,6 @@
       "The ffmpeg command has an error « {error} ».": "Il comando ffmpeg ha un errore « {error} ».",
       "Program interruption detected. Shutdown in progress...": "Interruzione del programma rilevata. Spegnimento in corso...",
       "Trailer « {title} » is greater than « {duration} ».": "Il trailer « {title} » è più lungo di « {duration} ».",
-      "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH non è definito. Tutti i trailer saranno scaricati indipendentemente dalla loro lunghezza."
+      "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH non è definito. Tutti i trailer saranno scaricati indipendentemente dalla loro lunghezza.",
+      "{app} not configured.": "Tieni presente che « {app} » non è configurato nel file config.yaml"
 }

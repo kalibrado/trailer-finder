@@ -1,29 +1,40 @@
-"""modules/exceptions.py"""
-
-
 class ArrApiError(Exception):
-    """Radarr/Sonarr api exceptions."""
+    """Exception raised for errors related to Radarr/Sonarr APIs."""
+
+    pass
 
 
 class TranslatorError(Exception):
-    """Translator module exceptions."""
+    """Exception raised for errors in the Translator module."""
+
+    pass
 
 
 class DurationError(Exception):
-    """Invalid Duration exceptions."""
+    """Exception raised when an invalid duration is encountered."""
+
+    pass
 
 
-class DonwloadError(Exception):
-    """Donwload exceptions."""
+class DownloadError(Exception):
+    """Exception raised for errors during the download process."""
+
+    pass
 
 
 class FfmpegError(Exception):
-    """Ffmpeg error exceptions."""
+    """Exception raised for errors related to Ffmpeg operations."""
+
+    pass
 
 
 class FfmpegCommandMissing(Exception):
-    """Ffmpeg command missing exceptions."""
+    """Exception raised when a required Ffmpeg command is missing."""
+
+    pass
 
 
 class InsufficientDiskSpaceError(Exception):
-    """Disk space exceptions."""
+    """Exception raised when there is insufficient disk space."""
+
+    pass
