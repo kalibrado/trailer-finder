@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install sphinx
+          pip install sphinx pydata-sphinx-theme sphinx-markdown-builder  sphinx-autobuild sphinx-rtd-theme sphinxcontrib-napoleon sphinxcontrib-httpdomain sphinxcontrib-plantuml recommonmark
 
       - name: Get the latest tag
         id: get_tag
