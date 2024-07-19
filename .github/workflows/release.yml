@@ -16,10 +16,10 @@ jobs:
           webhook_url: ${{ secrets.WEBHOOK_URL }}
           color: "2105893"
           username: "Release Changelog"
-          avatar_url: "https://cdn.discordapp.com/avatars/487431320314576937/bd64361e4ba6313d561d54e78c9e7171.png"
+          avatar_url: "https://github.com/kalibrado/trailer-finder/blob/v1.5.9/docs/source/_static/logo.png"
           content: "||@everyone||"
           footer_title: "Changelog"
-          footer_icon_url: "https://cdn.discordapp.com/avatars/487431320314576937/bd64361e4ba6313d561d54e78c9e7171.png"
+          footer_icon_url: "https://github.com/kalibrado/trailer-finder/blob/v1.5.9/docs/source/_static/logo.png"
           footer_timestamp: true
   push_to_registries:
     name: Push Docker image to multiple registries
