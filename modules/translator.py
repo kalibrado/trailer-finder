@@ -14,7 +14,7 @@ Classes:
         A class to handle language translations based on loaded translation files.
 
 Attributes:
-    - APP_TRANSLATE (str): The default language locale.
+    - local (str): The default language locale.
 
 Methods:
     - __init__(local="en"):
@@ -43,7 +43,7 @@ class Translator:
     Translator class to handle language translations.
 
     Attributes:
-        APP_TRANSLATE (str): The default language locale.
+        local (str): The default language locale.
     """
 
     def __init__(self, local="en"):
