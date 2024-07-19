@@ -1,5 +1,5 @@
-Module YoutubeDL
-================
+YoutubeDL
+=========
 
 .. automodule:: modules.youtube_dl
    :members:

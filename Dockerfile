@@ -12,11 +12,7 @@ RUN apk update && apk add --no-cache ffmpeg \
       && rm -rf /var/cache/apk/* \
       && rm -rf /root/.cache/pip 
 
-COPY ./config/ ./config
-COPY ./modules/ ./modules
-COPY ./locales/ ./locales
-COPY ./main.py ./main.py
-
+COPY . .
 
 RUN rm -rf /usr/local/bin/pip /usr/local/bin/pip3
 

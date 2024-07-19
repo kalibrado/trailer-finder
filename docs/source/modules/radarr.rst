@@ -1,5 +1,5 @@
-Radarr Module
-=============
+Radarr
+======
 
 .. automodule:: modules.radarr
    :members:

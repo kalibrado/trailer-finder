@@ -1,5 +1,5 @@
-Translator Module
-=================
+Translator
+==========
 
 
 .. automodule:: modules.translator

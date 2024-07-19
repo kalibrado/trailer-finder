@@ -8,3 +8,4 @@ config/config.yaml
 dl_test
 .vscode
 docs/build
+/logs

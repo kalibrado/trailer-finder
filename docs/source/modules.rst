@@ -12,3 +12,4 @@ Modules
    modules/utils
    modules/youtube_dl
    modules/exceptions
+   modules/colored_formatter

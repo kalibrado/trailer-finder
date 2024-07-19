@@ -1,5 +1,5 @@
-Sonarr Module
-=============
+Sonarr
+======
 
 .. automodule:: modules.sonarr
    :members:
