@@ -77,6 +77,8 @@ def main():
         date_format=config.get("APP_LOG_DATE_FORMAT", "%Y-%m-%d %H:%M:%S"),
         log_path=config.get("APP_LOG_PATH", None),
         log_level=config.get("APP_LOG_LEVEL", "INFO"),
+        log_backup_count=config.get("APP_LOG_BACKUP_COUNT", 5),
+        log_max_size=config.get("APP_LOG_MAX_SIZE", "5MB"),
     )
 
     # Initialize Utils object to provide utility methods for operations

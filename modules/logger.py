@@ -1,106 +1,106 @@
 """
-Module providing logging functionality for capturing messages during script execution.
+Module providing enhanced logging functionality with support for custom date formats and color-coded console output.
 
-This module defines the Logger class to handle logging messages with different levels of severity.
-It supports writing logs to both the console and a file based on configurations provided during initialization.
+This module defines the `Logger` class, which extends the `Translator` class to provide logging capabilities with
+customizable date formats and color-coded console messages. The `Logger` class supports logging messages with
+different levels of severity and can write logs to both the console and a file. It also includes support for log
+rotation based on file size and backup count.
 
 Dependencies:
     - logging: Standard Python logging module for logging messages.
-    - datetime: Date and time handling.
+    - logging.handlers: Provides handlers for logging, including rotating file handlers.
+    - sys: Provides access to system-specific parameters and functions.
+    - os: Provides a portable way of using operating system-dependent functionality.
+    - time: Provides time-related functions.
+    - modules.translator: Custom module for handling message translations.
 
 Classes:
     - Logger:
-        Class providing logging functionalities for capturing and formatting messages.
+        A logging class that extends the Translator class to handle logging messages with custom formatting and color output.
+
+    - ColoredFormatter:
+        A custom formatter for adding color to log messages based on their severity level.
 
 Attributes:
-    log_path (str): Path to the log file where logs will be written. If not specified, logs are not written to a file.
-    log_level (str): Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) based on configurations.
-
-Methods:
-    - __init__(self, local="en", date_format="%Y-%m-%d %H:%M:%S", log_path=None, log_level="INFO"):
-        Initializes the Logger with default settings or provided configuration.
-
-    - _setup_logging(self):
-        Configures the logging handlers based on provided log_path and log_level.
-
-    - _log(self, level: str, color: str, msg: str):
-        Logs a message to the console and/or file with the specified level and color.
-
-    - debug(self, msg_key="", **kwargs):
-        Logs a debug message with blue color to the console and file if configured.
-
-    - info(self, msg_key="", **kwargs):
-        Logs an informational message with white color to the console and file if configured.
-
-    - success(self, msg_key="", **kwargs):
-        Logs a success message with green color to the console and file if configured.
-
-    - warning(self, msg_key="", **kwargs):
-        Logs a warning message with yellow color to the console and file if configured.
-
-    - error(self, msg_key="", **kwargs):
-        Logs an error message with red color to the console and file if configured.
-
-    - critical(self, msg_key="", **kwargs):
-        Logs a critical message with magenta color to the console and file if configured.
+    local (str): The default language locale for translations.
+    date_format (str): Format for date and time in log messages.
+    log_path (str): Path to the log file where logs will be written. If not specified, logs are only output to the console.
+    log_level (str): Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) to control which messages are logged.
+    log_max_size (int): Maximum size of the log file before rotation occurs, specified in megabytes.
+    log_backup_count (int): Number of backup files to keep when rotating logs.
 
 Usage:
-    This module provides essential logging capabilities for capturing messages during script execution.
-    It initializes the Logger class with parameters to define log file path and logging level.
-    Ensure to configure the logger correctly to capture and format log messages as needed.
+    Initialize the `Logger` class with parameters to set up logging configurations such as file path, log level,
+    date format, maximum file size, and backup count. Logs can be written to the console and/or a file, and messages
+    will be color-coded based on their severity level in the console.
 
-Example:
-    To use this module, create an instance of the Logger class with desired configurations:
+    Example configuration:
+        logger = Logger(
+            local="en",
+            date_format="%Y-%m-%d %H:%M:%S",
+            log_path="path/to/logfile.log",
+            log_level="INFO",
+            log_max_size=10,  # in megabytes
+            log_backup_count=5
+        )
 
-    ```python
-    logger = Logger(
-        local="en",
-        date_format="%Y-%m-%d %H:%M:%S",
-        log_path="path/to/logfile.log",
-        log_level="DEBUG"
-    )
-    ```
-
-    You can then use the logger instance to log messages at various levels:
-
-    ```python
-    logger.info("This is an info message.")
-    logger.error("This is an error message.")
-    logger.debug("This is a debug message.")
-    logger.critical("This is a critical message.")
-    ```
-
-    The messages will be logged to both the console and the specified log file, with color coding for console output based on the severity level.
+    Log methods:
+        - info(msg_key="", **kwargs): Logs an informational message.
+        - success(msg_key="", **kwargs): Logs a success message.
+        - warning(msg_key="", **kwargs): Logs a warning message.
+        - error(msg_key="", **kwargs): Logs an error message.
+        - debug(msg_key="", **kwargs): Logs a debug message.
+        - critical(msg_key="", **kwargs): Logs a critical message.
 """
 
 import sys
 import os
 import logging
-from datetime import datetime
-from modules.translator import Translator
+import logging.handlers
 from time import sleep
+from modules.translator import Translator
+
+
+class ColoredFormatter(logging.Formatter):
+    """
+    Custom formatter to add color to log messages based on their severity level.
+
+    Attributes:
+        COLORS (dict): Dictionary mapping log levels to color codes.
+    """
+
+    COLORS = {"DEBUG": "\033[34m", "INFO": "\033[32m", "WARNING": "\033[33m", "ERROR": "\033[31m", "CRITICAL": "\033[41m", "RESET": "\033[0m"}
+
+    def format(self, record: logging.LogRecord) -> str:
+        """
+        Format the log record with color based on its severity level.
+
+        Args:
+            record (logging.LogRecord): The log record to format.
+
+        Returns:
+            str: The formatted log message with color.
+        """
+        color = self.COLORS.get(record.levelname, self.COLORS["RESET"])
+        reset = self.COLORS["RESET"]
+        message = super().format(record)
+        return f"{color}{message}{reset}"
 
 
 class Logger(Translator):
     """
-    Logger class that extends the Translator class to log messages with different severity levels.
+    Logger class that extends the Translator class to handle logging messages with custom formatting and color output.
 
     Attributes:
-        APP_TRANSLATE (str): The default language locale for translations.
-        log_path (str): Path to the log file where logs will be written.
-        log_level (str): Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        local (str): The default language locale for translations.
+        date_format (str): Format for date and time in log messages.
+        log_path (str): Path to the log file where logs will be written. If not specified, logs are only output to the console.
+        log_level (str): Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) to control which messages are logged.
+        log_max_size (int): Maximum size of the log file before rotation occurs, specified in bytes.
+        log_backup_count (int): Number of backup files to keep when rotating logs.
     """
 
-    # Console colors for log messages
-    RESET = "\033[0m"
-    RED = "\033[31m"
-    GREEN = "\033[32m"
-    WARN = "\033[0;33m"
-    WHITE = "\033[37m"
-    BLUE = "\033[34m"
-    MAGENTA = "\033[35m"
-
-    def __init__(self, local="en", date_format="%Y-%m-%d %H:%M:%S", log_path=None, log_level="INFO"):
+    def __init__(self, local="en", date_format="%Y-%m-%d %H:%M:%S", log_path=None, log_level="INFO", log_max_size=10, log_backup_count=5):
         """
         Initializes the Logger with a default locale, date format, and logging configuration.
 
@@ -109,66 +109,71 @@ class Logger(Translator):
             date_format (str, optional): The format for date and time in log messages. Defaults to "%Y-%m-%d %H:%M:%S".
             log_path (str, optional): Path to the log file. If None, logs are not written to a file. Defaults to None.
             log_level (str, optional): The logging level. Defaults to "INFO". Valid values are DEBUG, INFO, WARNING, ERROR, CRITICAL.
+            log_max_size (int, optional): Maximum log file size before rotation in megabytes. Defaults to 10.
+            log_backup_count (int, optional): Number of backup files to keep. Defaults to 5.
         """
         super().__init__(local)
+
+        if not isinstance(log_max_size, int) or log_max_size <= 0:
+            raise ValueError("log_max_size must be a positive integer.")
+        if not isinstance(log_backup_count, int) or log_backup_count < 0:
+            raise ValueError("log_backup_count must be a non-negative integer.")
+
+        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+        if log_level.upper() not in valid_levels:
+            raise ValueError(f"Invalid log_level provided. Valid values are {valid_levels}.")
+
         self.date_format = date_format
         self.log_path = log_path
         self.log_level = log_level.upper()
+        self.log_max_size = log_max_size * 1024 * 1024  # Convert MB to bytes
+        self.log_backup_count = log_backup_count
         self._setup_logging()
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """
-        Sets up logging configuration based on provided log_path and log_level.
+        Sets up logging configuration based on provided log_path, log_level, log_max_size, and log_backup_count.
         """
         log_level = getattr(logging, self.log_level, logging.INFO)
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        formatter = ColoredFormatter("%(asctime)s - %(levelname)s - %(message)s", datefmt=self.date_format)
+
+        logger = logging.getLogger()
+        logger.setLevel(log_level)
+
+        # Remove all existing handlers
+        if logger.hasHandlers():
+            logger.handlers.clear()
 
         # Console handler
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
         console_handler.setLevel(log_level)
+        logger.addHandler(console_handler)
 
         # File handler
         if self.log_path:
-            os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
-            file_handler = logging.FileHandler(self.log_path)
-            file_handler.setFormatter(formatter)
-            file_handler.setLevel(log_level)
-            logging.getLogger().addHandler(file_handler)
+            try:
+                os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
+                file_handler = logging.handlers.RotatingFileHandler(self.log_path, maxBytes=self.log_max_size, backupCount=self.log_backup_count)
+                file_handler.setFormatter(formatter)
+                file_handler.setLevel(log_level)
+                logger.addHandler(file_handler)
+            except Exception as e:
+                print(f"Failed to set up file logging: {e}", file=sys.stderr)
 
-        logging.getLogger().addHandler(console_handler)
-        logging.getLogger().setLevel(log_level)
-
-    def _log(self, level: str, color: str, msg: str):
+    def _log(self, level: str, msg: str) -> None:
         """
         Logs a message to the console and/or file with the specified level and color.
 
         Args:
             level (str): The logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-            color (str): The color code for the message.
             msg (str): The message to log.
         """
         log_func = getattr(logging, level.lower())
         log_func(msg)
+        sleep(1)  # Wait 1s to avoid excessive CPU load
 
-        # Log to console with color
-        current_time = datetime.now().strftime(self.date_format)
-        sys.stdout.write(f"[ {current_time} ] -> {color} {msg} {self.RESET} \n")
-        sys.stdout.flush()
-        sleep(0.5)  # Wait 0.5s to avoid excessive CPU load
-
-    def debug(self, msg_key="", **kwargs):
-        """
-        Logs a debug message.
-
-        Args:
-            msg_key (str): The key for the message to translate.
-            **kwargs: Additional keyword arguments to format the translated message.
-        """
-        msg = self.translate(msg_key, **kwargs)
-        self._log("DEBUG", self.BLUE, msg)
-
-    def info(self, msg_key="", **kwargs):
+    def info(self, msg_key: str = "", **kwargs) -> None:
         """
         Logs an informational message.
 
@@ -177,9 +182,9 @@ class Logger(Translator):
             **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log("INFO", self.WHITE, msg)
+        self._log("INFO", msg)
 
-    def success(self, msg_key="", **kwargs):
+    def success(self, msg_key: str = "", **kwargs) -> None:
         """
         Logs a success message.
 
@@ -188,9 +193,9 @@ class Logger(Translator):
             **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log("INFO", self.GREEN, msg)
+        self._log("INFO", msg)
 
-    def warning(self, msg_key="", **kwargs):
+    def warning(self, msg_key: str = "", **kwargs) -> None:
         """
         Logs a warning message.
 
@@ -199,9 +204,9 @@ class Logger(Translator):
             **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log("WARNING", self.WARN, msg)
+        self._log("WARNING", msg)
 
-    def error(self, msg_key="", **kwargs):
+    def error(self, msg_key: str = "", **kwargs) -> None:
         """
         Logs an error message.
 
@@ -210,9 +215,20 @@ class Logger(Translator):
             **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log("ERROR", self.RED, msg)
+        self._log("ERROR", msg)
 
-    def critical(self, msg_key="", **kwargs):
+    def debug(self, msg_key: str = "", **kwargs) -> None:
+        """
+        Logs a debug message.
+
+        Args:
+            msg_key (str): The key for the message to translate.
+            **kwargs: Additional keyword arguments to format the translated message.
+        """
+        msg = self.translate(msg_key, **kwargs)
+        self._log("DEBUG", msg)
+
+    def critical(self, msg_key: str = "", **kwargs) -> None:
         """
         Logs a critical message.
 
@@ -221,4 +237,4 @@ class Logger(Translator):
             **kwargs: Additional keyword arguments to format the translated message.
         """
         msg = self.translate(msg_key, **kwargs)
-        self._log("CRITICAL", self.MAGENTA, msg)
+        self._log("CRITICAL", msg)
