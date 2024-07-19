@@ -7,27 +7,25 @@ different levels of severity and can write logs to both the console and a file. 
 rotation based on file size and backup count.
 
 Dependencies:
-    - logging: Standard Python logging module for logging messages.
-    - logging.handlers: Provides handlers for logging, including rotating file handlers.
-    - sys: Provides access to system-specific parameters and functions.
-    - os: Provides a portable way of using operating system-dependent functionality.
-    - time: Provides time-related functions.
-    - modules.translator: Custom module for handling message translations.
+    - `logging`: Standard Python logging module for logging messages.
+    - `logging.handlers`: Provides handlers for logging, including rotating file handlers.
+    - `sys`: Provides access to system-specific parameters and functions.
+    - `os`: Provides a portable way of using operating system-dependent functionality.
+    - `time`: Provides time-related functions.
+    - `modules.translator`: Custom module for handling message translations.
+    - `modules.colored_formatter`: Custom module defining the `ColoredFormatter` class for color-coded logging.
 
 Classes:
-    - Logger:
-        A logging class that extends the Translator class to handle logging messages with custom formatting and color output.
-
-    - ColoredFormatter:
-        A custom formatter for adding color to log messages based on their severity level.
+    - `Logger`:
+        A logging class that extends the `Translator` class to handle logging messages with custom formatting and color output.
 
 Attributes:
-    local (str): The default language locale for translations.
-    date_format (str): Format for date and time in log messages.
-    log_path (str): Path to the log file where logs will be written. If not specified, logs are only output to the console.
-    log_level (str): Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) to control which messages are logged.
-    log_max_size (int): Maximum size of the log file before rotation occurs, specified in megabytes.
-    log_backup_count (int): Number of backup files to keep when rotating logs.
+    - `local` (str): The default language locale for translations.
+    - `date_format` (str): Format for date and time in log messages.
+    - `log_path` (str): Path to the log file where logs will be written. If not specified, logs are only output to the console.
+    - `log_level` (str): Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) to control which messages are logged.
+    - `log_max_size` (int): Maximum size of the log file before rotation occurs, specified in megabytes.
+    - `log_backup_count` (int): Number of backup files to keep when rotating logs.
 
 Usage:
     Initialize the `Logger` class with parameters to set up logging configurations such as file path, log level,
@@ -35,6 +33,9 @@ Usage:
     will be color-coded based on their severity level in the console.
 
     Example configuration:
+
+    .. code-block:: python
+
         logger = Logger(
             local="en",
             date_format="%Y-%m-%d %H:%M:%S",
@@ -45,12 +46,18 @@ Usage:
         )
 
     Log methods:
-        - info(msg_key="", **kwargs): Logs an informational message.
-        - success(msg_key="", **kwargs): Logs a success message.
-        - warning(msg_key="", **kwargs): Logs a warning message.
-        - error(msg_key="", **kwargs): Logs an error message.
-        - debug(msg_key="", **kwargs): Logs a debug message.
-        - critical(msg_key="", **kwargs): Logs a critical message.
+        - `info(msg_key="", **kwargs)`: Logs an informational message.
+        - `success(msg_key="", **kwargs)`: Logs a success message.
+        - `warning(msg_key="", **kwargs)`: Logs a warning message.
+        - `error(msg_key="", **kwargs)`: Logs an error message.
+        - `debug(msg_key="", **kwargs)`: Logs a debug message.
+        - `critical(msg_key="", **kwargs)`: Logs a critical message.
+
+    Error Handling:
+        The `Logger` class raises specific exceptions with translated messages when invalid parameters are provided:
+        - `InvalidLogSizeError`: Raised if `log_max_size` is not a positive integer.
+        - `InvalidLogCountError`: Raised if `log_backup_count` is not a non-negative integer.
+        - `InvalidLogLevelError`: Raised if `log_level` is not one of the valid logging levels (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).
 """
 
 import sys
@@ -59,32 +66,8 @@ import logging
 import logging.handlers
 from time import sleep
 from modules.translator import Translator
-
-
-class ColoredFormatter(logging.Formatter):
-    """
-    Custom formatter to add color to log messages based on their severity level.
-
-    Attributes:
-        COLORS (dict): Dictionary mapping log levels to color codes.
-    """
-
-    COLORS = {"DEBUG": "\033[34m", "INFO": "\033[32m", "WARNING": "\033[33m", "ERROR": "\033[31m", "CRITICAL": "\033[41m", "RESET": "\033[0m"}
-
-    def format(self, record: logging.LogRecord) -> str:
-        """
-        Format the log record with color based on its severity level.
-
-        Args:
-            record (logging.LogRecord): The log record to format.
-
-        Returns:
-            str: The formatted log message with color.
-        """
-        color = self.COLORS.get(record.levelname, self.COLORS["RESET"])
-        reset = self.COLORS["RESET"]
-        message = super().format(record)
-        return f"{color}{message}{reset}"
+from modules.colored_formatter import ColoredFormatter
+from modules.exceptions import InvalidLogLevelError, InvalidLogCountError, InvalidLogSizeError
 
 
 class Logger(Translator):
@@ -115,13 +98,29 @@ class Logger(Translator):
         super().__init__(local)
 
         if not isinstance(log_max_size, int) or log_max_size <= 0:
-            raise ValueError("log_max_size must be a positive integer.")
-        if not isinstance(log_backup_count, int) or log_backup_count < 0:
-            raise ValueError("log_backup_count must be a non-negative integer.")
+            raise InvalidLogSizeError(
+                self.translate(
+                    "The size of the defined logs in the config file is not valid « {size} ».",
+                    size=log_max_size,
+                )
+            )
+        if not isinstance(log_backup_count, int):
+            raise InvalidLogCountError(
+                self.translate(
+                    "The number of logs saved in the configuration file is not a valid format « {count} ».",
+                    count=log_backup_count,
+                )
+            )
 
         valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         if log_level.upper() not in valid_levels:
-            raise ValueError(f"Invalid log_level provided. Valid values are {valid_levels}.")
+            raise InvalidLogLevelError(
+                self.translate(
+                    "The defined log level « {log} » is not valid. The valid log type is « {levels} ».",
+                    log=log_level,
+                    levels=", ".join(valid_levels),
+                )
+            )
 
         self.date_format = date_format
         self.log_path = log_path
