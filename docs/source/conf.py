@@ -59,7 +59,8 @@ html_static_path = ["_static"]
 # HTML Theme Options
 html_theme_options = {
     "logo": {
-        "text": project,
+        "text": f"{project} {release}",
+        "image": "logo.png"
     },
     "icon_links": [
         {

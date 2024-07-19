@@ -6,9 +6,17 @@
 Welcome to the Trailer Finder Documentation!
 ============================================
 
-Trailer Finder is a versatile automation tool designed to simplify the process of searching and downloading movie and TV show trailers. Built with Python, it integrates with Radarr and Sonarr APIs and uses TMDB (The Movie Database) for trailer information and yt-dlp for downloading from YouTube.
 
-This guide will help you understand how to set up, configure, and use Trailer Finder effectively, whether you are running it manually or using Docker for containerized deployment.
+.. list-table::
+   :widths: 20 70
+   :align: center
+
+   * - .. image:: _static/logo.png
+         :alt: Trailer Finder Logo
+         :width: 450 
+     - Trailer Finder is a versatile automation tool designed to simplify the process of searching and downloading movie and TV show trailers. Built with Python, it integrates with Radarr and Sonarr APIs and uses TMDB (The Movie Database) for trailer information and yt-dlp for downloading from YouTube.
+
+       This guide will help you understand how to set up, configure, and use Trailer Finder effectively, whether you are running it manually or using Docker for containerized deployment.
 
 Features
 --------
