@@ -106,6 +106,10 @@ YT_DLP_MAX_LENGTH: 200
 # Base keyword for general official trailers
 YT_DLP_SEARCH_KEYWORD: "official trailer"
 
+YT_SEARCH_PREFIX:
+  - ytsearch5
+  - gvsearch5
+
 # Keyword template for searching season-specific trailers
 YT_DLP_SEARCH_KEYWORD_SEASON: "{show} Season {season_number}"
 
