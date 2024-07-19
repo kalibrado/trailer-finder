@@ -1,5 +1,5 @@
-Custom Exceptions
-=================
+Exceptions
+==========
 .. automodule:: modules.exceptions
    :members:
    :undoc-members:

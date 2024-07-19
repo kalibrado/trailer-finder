@@ -1,5 +1,4 @@
 {
-      "{msg_gen}": "{msg_gen}",
       "Starting trailers finder.": "Starting trailers finder.",
       "TV Show trailers finders started.": "TV Show trailers finders started.",
       "Movie trailers finder started.": "Movie trailers finder started.",
@@ -28,5 +27,8 @@
       "Program interruption detected. Shutdown in progress...": "Program interruption detected. Shutdown in progress...",
       "Trailer « {title} » is greater than « {duration} ».": "Trailer « {title} » is greater than « {duration} ».",
       "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.": "YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length. All trailers will be downloaded regardless of length.",
-      "{app} not configured.": "Please note the « {app} » is not configured in the config.yaml file"
+      "{app} not configured.": "Please note the « {app} » is not configured in the config.yaml file",
+      "The size of the defined logs in the config file is not valid « {size} ».": "The size of the defined logs in the config file is not valid « {size} ».",
+      "The number of logs saved in the configuration file is not a valid format « {count} ».": "The number of logs saved in the configuration file is not a valid format « {count} ».",
+      "The defined log level « {log} » is not valid. The valid log type is « {levels} ».": "The defined log level « {log} » is not valid. The valid log type is  « {levels} »."
 }
