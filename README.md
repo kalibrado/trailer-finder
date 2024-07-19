@@ -59,7 +59,7 @@ We welcome contributions! Please follow the instructions in our [contributing gu
 
 ## Docker
 
-To run Trailer Finder with Docker, follow the instructions available in our [Docker section](https://kalibrado.github.io/trailer-finder/general/docker.html) on GitHub Pages.
+To run Trailer Finder with Docker, follow the instructions available in our [Docker section](https://kalibrado.github.io/trailer-finder/general/usage.html#using-docker) on GitHub Pages.
 
 ## Troubleshooting
 
