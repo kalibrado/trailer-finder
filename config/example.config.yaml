@@ -8,6 +8,12 @@ APP_USE_TITLE: "originalTitle"
 # Format date for log output
 APP_LOG_DATE_FORMAT: "%Y-%m-%d %H:%M:%S"
 
+# Path to the log file
+APP_LOG_PATH: "logs/trailer_finder.log"
+
+# Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+APP_LOG_LEVEL: "INFO"
+
 # Limit to one trailer per item; last trailer is downloaded
 APP_ONLY_ONE_TRAILER: true
 

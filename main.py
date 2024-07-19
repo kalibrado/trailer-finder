@@ -72,7 +72,12 @@ def main():
         config = yaml.safe_load(f)
 
     # Initialize Logger with a specific localization setting from config.yaml
-    logger = Logger(local=config.get("APP_TRANSLATE"), date_format=config.get("APP_LOG_DATE_FORMAT"))
+    logger = Logger(
+        local=config.get("APP_TRANSLATE", "en"),
+        date_format=config.get("APP_LOG_DATE_FORMAT", "%Y-%m-%d %H:%M:%S"),
+        log_path=config.get("APP_LOG_PATH", None),
+        log_level=config.get("APP_LOG_LEVEL", "INFO"),
+    )
 
     # Initialize Utils object to provide utility methods for operations
     utils = Utils(logger, config)
