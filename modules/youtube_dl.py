@@ -117,7 +117,7 @@ class YoutubeDL(Translator):
             "ignoreerrors": True,
             "quiet": self.config.get("APP_QUIET_MODE", False),
             "noprogress": self.config.get("APP_QUIET_MODE", False),
-            "sleep_interval_requests": self.config.get("YT_DLP_INTERVAL_RESQUESTS", 1),
+            "sleep_interval_requests": self.config.get("YT_DLP_INTERVAL_REQUESTS", 1),
             "match_filter": self.match_filter,
         }
         if self.config.get("YT_DLP_SKIP_INTROS", False):
