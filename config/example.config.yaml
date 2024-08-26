@@ -117,7 +117,7 @@ YT_DLP_SEARCH_KEYWORD_SEASON: "{show} Season {season_number}"
 # to search for official season trailers on YouTube.
 
 # Set this for waiting time between yt_dlp requests (seconds)
-YT_DLP_INTERVAL_RESQUESTS: 6
+YT_DLP_INTERVAL_REQUESTS: 6
 
 # Preferred format for downloading videos
 YT_DLP_FORMAT: "bestvideo+bestaudio"
