@@ -85,7 +85,7 @@ Docker Compose can be used to manage Trailer Finder deployment with its dependen
           security_opt:
             - no-new-privileges:true
           volumes:
-            - ./config.yaml:./config/config.yaml  # Path to the configuration file
+            - ./config.yaml:app/config/config.yaml  # Path to the configuration file
             - /mnt/Media1:/mnt/Media1  # Media folder 1
             - /mnt/Media2:/mnt/Media2  # Media folder 2
 
