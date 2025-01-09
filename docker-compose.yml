@@ -6,7 +6,7 @@ services:
     security_opt:
       - no-new-privileges:true
     volumes:
-      - ./config.yaml:./config/config.yaml # Where the config file will be located
+      - ./config.yaml:app/config/config.yaml # Where the config file will be located
       # the access path must correspond to those of radarr and sonarr
       - /mnt/Media1:/mnt/Media1 # media folder 1
       - /mnt/Media2:/mnt/Media1 # media folder 2

@@ -14,7 +14,7 @@
       "Trailer download from « {link} » for « {title} ».": "Trailer download from « {link} » for « {title} ».",
       "Failed to download from {link}: {error}": "Failed to download from {link}: {error}",
       "There is no cache folder for « {title} ».": "There is no cache folder for « {title} ».",
-      "« {path} » does not have enough disk space. Only « {free_gb} »  GB are available.": "« {path} » does not have enough disk space. Only « {free_gb} »  GB are available.",
+      "« {path} » does not have enough disk space. Only « {free_gb} » GB are available.": "« {path} » does not have enough disk space. Only « {free_gb} » GB are available.",
       "An error has occurred « {error} ».": "An error has occurred « {error} ».",
       "The file « {name} » is not in the « {path} ».": "The file « {name} » is not in the « {path} ».",
       "Warning « {warning} ».": "Warning « {warning} ».",
