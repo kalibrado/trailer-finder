@@ -7,5 +7,6 @@ tmp/*
 config/config.yaml
 dl_test
 .vscode
+*/cookies.txt
 docs/build
 /logs

@@ -10,7 +10,6 @@ Dependencies:
     - pyarr: Library for interfacing with Sonarr API.
     - modules.utils: Utility functions for handling trailers, downloading from YouTube, and post-processing with FFMPEG.
     - modules.logger.Logger: Logger instance for logging messages.
-    - modules.exceptions.InsufficientDiskSpaceError: Exception raised when there is insufficient disk space for operations.
 
 Functions:
     - sonarr(logger, config, utils):
@@ -28,10 +27,9 @@ Usage:
 """
 
 import os
-from pyarr import SonarrAPI
+from pyarr import SonarrAPI # type: ignore
 from modules.utils import Utils
 from modules.logger import Logger
-from modules.exceptions import InsufficientDiskSpaceError
 
 
 def sonarr(logger: Logger, config: dict, utils: Utils):
@@ -43,83 +41,79 @@ def sonarr(logger: Logger, config: dict, utils: Utils):
     api = config.get("SONARR_API", None)
 
     if host is None or api is None:
-        logger.warning("{app} not configured.", app="Sonarr")
+        logger.warning("app_not_configured", app="Sonarr")
         return
 
-    try:
-        # Initialize Sonarr API
-        sonarr_api = SonarrAPI(host, api)
+    # Initialize Sonarr API
+    sonarr_api = SonarrAPI(host, api)
+    print("--------------------------------")
+    logger.info("tvshow_finder_start")
+
+    # Iterate through all TV series in Sonarr
+    for show in sonarr_api.get_series():
+        assert isinstance(show, dict)
+
+        path = show.get("path", None)
+        title = utils.get_title(show)
+        # defined title to use for all process
+        show["use_title"] = title
+        year = show.get("year", None)
+        # for tmp folder name
+        show["tmp"] = f"{title} ({year})"
+
+        if path is None or title is None:
+            continue
+
+        show["trailers_dest"] = os.path.join(show["path"], config["APP_DEFAULT_DIR"])
+
+        custom_path = config.get("APP_CUSTOM_PATH", None)
+        custom_name = config.get("APP_CUSTOM_NAME_SHOW", None)
+        # create folder in custom path using name cache folder
+        if custom_path and custom_name:
+            show["trailers_dest"] = os.path.join(custom_path, custom_name, title)
+
+        # create outputs folder if not exist
+        os.makedirs(show["trailers_dest"], exist_ok=True)
+
+        utils.check_space(show["trailers_dest"])
+
+
         print("--------------------------------")
-        logger.info("TV Show trailers finders started.")
 
-        # Iterate through all TV series in Sonarr
-        for show in sonarr_api.get_series():
-            assert isinstance(show, dict)
+        seasons = show.get("seasons", [])
+        if len(seasons) > 0:
+            for season in seasons:
+                title_format = config.get(
+                    "YT_DLP_SEARCH_KEYWORD_SEASON", "{show} Season {season_number}"
+                )
+                show["use_title"] = title_format.format(
+                    show=title, season_number=season["seasonNumber"]
+                )
+                show["trailers_dest"] = os.path.join(
+                    show["trailers_dest"], show["use_title"]
+                )
 
-            path = show.get("path", None)
-            title = utils.get_title(show)
-            # defined title to use for all process
-            show["use_title"] = title
-            year = show.get("year", None)
-            # for tmp folder name
-            show["tmp"] = f"{title} ({year})"
+                os.makedirs(show["outputs_folder"], exist_ok=True)
 
-            if path is None or title is None:
-                # radarr item dont have path or title
-                logger.warning("Warning « {warning} ».", warning=show)
-                continue
-
-            show["trailers_dest"] = os.path.join(show["path"], config["APP_DEFAULT_DIR"])
-
-            custom_path = config.get("APP_CUSTOM_PATH", None)
-            custom_name = config.get("APP_CUSTOM_NAME_SHOW", None)
-            # create folder in custom path using name cache folder
-            if custom_path and custom_name:
-                show["trailers_dest"] = os.path.join(custom_path, custom_name, title)
-
-            # create outputs folder if not exist
-            os.makedirs(show["trailers_dest"], exist_ok=True)
-
-            try:
-                # Skip if not enough space
-                utils.check_space(show["trailers_dest"])
-            except InsufficientDiskSpaceError as err:
-                logger.error("An error has occurred « {error} ».", error=err)
-                continue
-
-            print("--------------------------------")
-
-            seasons = show.get("seasons", [])
-            if len(seasons) > 0:
-                for season in seasons:
-                    title_format = config.get("YT_DLP_SEARCH_KEYWORD_SEASON", "{show} Season {season_number}")
-                    show["use_title"] = title_format.format(show=title, season_number=season["seasonNumber"])
-                    show["trailers_dest"] = os.path.join(show["trailers_dest"], show["use_title"])
+                utils.check_space(show["outputs_folder"])
 
 
-                    os.makedirs(show["outputs_folder"], exist_ok=True)
-                    try:
-                        # Skip if not enough space
-                        utils.check_space(show["outputs_folder"])
-                    except InsufficientDiskSpaceError as err:
-                        logger.error("An error has occurred: {error}.", error=err)
-                        continue
-                     
-                    trailers_in_outputs_folder = os.listdir(show["outputs_folder"])
-                    count = len(trailers_in_outputs_folder)
+                trailers_in_outputs_folder = os.listdir(show["outputs_folder"])
+                count = len(trailers_in_outputs_folder)
 
-                    if config["APP_ONLY_ONE_TRAILER"] and count >= 1:
-                        logger.success("« {title} » already has « {count} » trailers.", title=show["use_title"], count=count)
-                        continue
+                if config["APP_ONLY_ONE_TRAILER"] and count >= 1:
+                    logger.success("already_have", title=show["use_title"], count=count)
+                    continue
 
-                    logger.info("Search trailers for « {title} ».", title=show["use_title"])
-                    season_trailers = utils.trailer_pull(show["tmdbId"], "tv", show, seasonNumber=season["seasonNumber"])
-                    list_of_trailers = utils.get_new_trailers(season_trailers, trailers_in_outputs_folder)
-                    utils.download_trailers(list_of_trailers, show)
-                    print("--------------------------------")
+                logger.info("search_trailers", title=show["use_title"])
+                season_trailers = utils.trailer_pull(
+                    show["tmdbId"], "tv", show, seasonNumber=season["seasonNumber"]
+                )
+                list_of_trailers = utils.get_new_trailers(
+                    season_trailers, trailers_in_outputs_folder
+                )
+                utils.download_trailers(list_of_trailers, show)
+                print("--------------------------------")
 
-        logger.info("TV Show trailers finder ended.")
-        print("--------------------------------")
-    except Exception as err:
-        debug = {"error": err, "host": host}
-        logger.error("An error has occurred « {error} ».", error=debug)
+    logger.info("tvshow_finder_end")
+    print("--------------------------------")

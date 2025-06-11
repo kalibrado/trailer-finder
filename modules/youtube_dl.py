@@ -28,7 +28,7 @@ Usage:
 """
 
 import os
-import yt_dlp
+import yt_dlp  # type: ignore
 from modules.logger import Logger
 from modules.exceptions import DurationError, DownloadError
 from modules.translator import Translator
@@ -53,9 +53,9 @@ class YoutubeDL(Translator):
             title = info_dict.get("title")
         # Define a download progress function to handle yt-dlp progress hooks
         if d["status"] == "finished":
-            self.logger.success("The download of the trailer « {title} » succeeded.", title=title)
+            self.logger.success("download_success", title=title)
         if d["status"] == "error":
-            raise DownloadError(self.translate("The download of the trailer « {title} » failed.", title=title))
+            raise DownloadError(self.translate("download_failed", title=title))
 
     def match_filter(self, info, *, incomplete):
         """
@@ -68,13 +68,13 @@ class YoutubeDL(Translator):
         max_length = self.config.get("YT_DLP_MAX_LENGTH", None)
         if max_length is None:
             max_length = duration
-            self.logger.warning("YT_DLP_MAX_LENGTH is not defined. All trailers will be uploaded regardless of their length.")
+            self.logger.warning("yt_dlp_max_length_undefined")
 
         if duration and (int(duration) > int(max_length)):
             title = info.get("title")
             raise DurationError(
                 self.translate(
-                    "Trailer « {title} » is greater than « {duration} ».",
+                    "trailer_too_long",
                     title=title,
                     duration=f"{duration}/{max_length}",
                 )
@@ -93,7 +93,11 @@ class YoutubeDL(Translator):
         yt_link = link.get("yt_link")
 
         # Log the process of downloading the trailer using yt-dlp
-        self.logger.info("Trailer download from « {link} » for « {title} ».", title=f"{title}", link=yt_link)
+        self.logger.info(
+            "download_from",
+            title=f"{title}",
+            link=yt_link,
+        )
         ydl.download(yt_link)
 
     def download_trailers(self, links: list, item: dict) -> str:
@@ -119,12 +123,29 @@ class YoutubeDL(Translator):
             "noprogress": self.config.get("APP_QUIET_MODE", False),
             "sleep_interval_requests": self.config.get("YT_DLP_INTERVAL_REQUESTS", 1),
             "match_filter": self.match_filter,
+            "verbose": self.config.get("APP_LOG_LEVEL", False) == "DEBUG",
         }
         if self.config.get("YT_DLP_SKIP_INTROS", False):
             ytdl_opts["postprocessors"] = [
-                {"key": "SponsorBlock"},
-                {"key": "ModifyChapters", "remove_sponsor_segments": self.config.get("YT_DLP_SPONSORS_BLOCK", [])},
+                {
+                    "key": "SponsorBlock",
+                    "categories": self.config.get("YT_DLP_SPONSORS_BLOCK", []),
+                },
+                {
+                    "key": "ModifyChapters",
+                    "remove_sponsor_segments": self.config.get(
+                        "YT_DLP_SPONSORS_BLOCK", []
+                    ),
+                },
             ]
+
+        cookie_file = self.config.get("YT_DLP_COOKIE_FILE")
+        if cookie_file and os.path.isfile(cookie_file):
+            ytdl_opts["cookiefile"] = cookie_file
+            self.logger.info(
+                "using_cookie_file", cookie_file=cookie_file
+            )
+
         # Loop through each trailer link and attempt to download it
 
         for link in links:
@@ -137,14 +158,34 @@ class YoutubeDL(Translator):
             else:
                 ytdl_opts["outtmpl"] = f"{cache_path}/{link['name']}"
 
-            self.logger.info("Search trailers with « {query} ».", query=link["query_type"])
+            self.logger.info(
+                "search_with_query", query=link["query_type"]
+            )
             try:
                 ydl = yt_dlp.YoutubeDL(ytdl_opts)
-                self.logger.info("Trailer download from « {link} » for « {title} ».", title=f"{title}", link=link.get("yt_link"))
+                self.logger.info(
+                    "download_from",
+                    title=f"{title}",
+                    link=link.get("yt_link"),
+                )
                 ydl.download(link.get("yt_link"))
                 if len(os.listdir(cache_path)) == 0:
-                    self.logger.warning("No trailers were found with « {query} ».", query=link["query_type"])
-            except DownloadError as e:
-                self.logger.error("Unexpected error for {link}: {error}", link=f"{title} - {link}", error=str(e))
+                    self.logger.warning(
+                        "no_trailers_found",
+                        query=link["query_type"],
+                    )
+            except Exception as e:
+                self.logger.error(
+                    "unexpected_error",
+                    link=f"{title} - {link}",
+                    error=str(e),
+                )
                 continue
+        self.logger.debug(
+            "download_completed",
+            title=title,
+            count=len(os.listdir(cache_path)),
+            cache_path=cache_path,
+        )
+
         return cache_path

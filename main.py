@@ -16,8 +16,6 @@ Dependencies:
     - modules.radarr.radarr: Module for interacting with Radarr API to find and download movie trailers.
     - modules.logger.Logger: Logger instance for logging messages with custom formatting and color output.
     - modules.utils.Utils: Utility functions instance for handling trailer downloads and processing.
-    - modules.exceptions.FfmpegError: Exception raised for errors related to FFMPEG processing.
-    - modules.exceptions.FfmpegCommandMissing: Exception raised when FFMPEG command is missing in configuration.
     - modules.exceptions.InvalidLogLevelError: Exception raised for invalid logging levels.
     - modules.exceptions.InvalidLogCountError: Exception raised for invalid log backup count.
     - modules.exceptions.InvalidLogSizeError: Exception raised for invalid log file size.
@@ -57,8 +55,7 @@ from modules.sonarr import sonarr
 from modules.radarr import radarr
 from modules.logger import Logger
 from modules.utils import Utils
-from modules.exceptions import FfmpegError, FfmpegCommandMissing, InvalidLogLevelError, InvalidLogCountError, InvalidLogSizeError
-
+from modules.exceptions import  InvalidLogLevelError, InvalidLogCountError, InvalidLogSizeError
 
 def main():
     """
@@ -102,7 +99,7 @@ def main():
             # Infinite loop to continuously run the processes
             while True:
                 # Log the start of the trailer finding process
-                logger.info("Starting trailers finder.")
+                logger.info("start_finder")
 
                 # Run the Radarr process to find and download movie trailers
                 radarr(logger, config, utils)
@@ -115,27 +112,19 @@ def main():
 
                 # Sleep for the specified duration before the next run
                 time = config["APP_SLEEP_TIME"]
-                logger.info("Please wait for {hours} hours.", hours=time)
+                logger.info("wait_hours", hours=time)
                 sleep(time * 3600)  # Convert hours to seconds for sleep function
 
-                # Clear the console screen for better readability
+                # Clear the console screen for better readability       
                 os.system("clear")
 
-        except (
-            FfmpegError,
-            FfmpegCommandMissing,
-            InvalidLogLevelError,
-            InvalidLogCountError,
-            InvalidLogSizeError,
-        ) as err:
-            logger.error("An error has occurred: {error}.", error=err)
-
+        except Exception as e:
+            logger.error("error_occurred", error=e)            
         except KeyboardInterrupt:
-            logger.error("Program interruption detected. Shutdown in progress...")
+            logger.error("shutdown_detected")
 
         finally:
             sys.exit(0)
-
 
 if __name__ == "__main__":
     # Start the main function

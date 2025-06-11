@@ -67,7 +67,11 @@ import logging.handlers
 from time import sleep
 from modules.translator import Translator
 from modules.colored_formatter import ColoredFormatter
-from modules.exceptions import InvalidLogLevelError, InvalidLogCountError, InvalidLogSizeError
+from modules.exceptions import (
+    InvalidLogLevelError,
+    InvalidLogCountError,
+    InvalidLogSizeError,
+)
 
 
 class Logger(Translator):
@@ -83,7 +87,15 @@ class Logger(Translator):
         log_backup_count (int): Number of backup files to keep when rotating logs.
     """
 
-    def __init__(self, local="en", date_format="%Y-%m-%d %H:%M:%S", log_path=None, log_level="INFO", log_max_size=10, log_backup_count=5):
+    def __init__(
+        self,
+        local="en",
+        date_format="%Y-%m-%d %H:%M:%S",
+        log_path=None,
+        log_level="INFO",
+        log_max_size=10,
+        log_backup_count=5,
+    ):
         """
         Initializes the Logger with a default locale, date format, and logging configuration.
 
@@ -100,14 +112,14 @@ class Logger(Translator):
         if not isinstance(log_max_size, int) or log_max_size <= 0:
             raise InvalidLogSizeError(
                 self.translate(
-                    "The size of the defined logs in the config file is not valid « {size} ».",
+                    "log_size_invalid",
                     size=log_max_size,
                 )
             )
         if not isinstance(log_backup_count, int):
             raise InvalidLogCountError(
                 self.translate(
-                    "The number of logs saved in the configuration file is not a valid format « {count} ».",
+                    "log_count_invalid",
                     count=log_backup_count,
                 )
             )
@@ -116,7 +128,7 @@ class Logger(Translator):
         if log_level.upper() not in valid_levels:
             raise InvalidLogLevelError(
                 self.translate(
-                    "The defined log level « {log} » is not valid. The valid log type is « {levels} ».",
+                    "log_level_invalid",
                     log=log_level,
                     levels=", ".join(valid_levels),
                 )
@@ -134,7 +146,9 @@ class Logger(Translator):
         Sets up logging configuration based on provided log_path, log_level, log_max_size, and log_backup_count.
         """
         log_level = getattr(logging, self.log_level, logging.INFO)
-        formatter = ColoredFormatter("%(asctime)s - %(levelname)s - %(message)s", datefmt=self.date_format)
+        formatter = ColoredFormatter(
+            "%(asctime)s - %(levelname)s - %(message)s", datefmt=self.date_format
+        )
 
         logger = logging.getLogger()
         logger.setLevel(log_level)
@@ -153,7 +167,11 @@ class Logger(Translator):
         if self.log_path:
             try:
                 os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
-                file_handler = logging.handlers.RotatingFileHandler(self.log_path, maxBytes=self.log_max_size, backupCount=self.log_backup_count)
+                file_handler = logging.handlers.RotatingFileHandler(
+                    self.log_path,
+                    maxBytes=self.log_max_size,
+                    backupCount=self.log_backup_count,
+                )
                 file_handler.setFormatter(formatter)
                 file_handler.setLevel(log_level)
                 logger.addHandler(file_handler)
