@@ -163,3 +163,13 @@ class InvalidLogLevelError(Exception):
     """
 
     pass
+
+class WritePermissionError(Exception):
+    """
+    Exception raised when there is no write permission to a file or directory.
+    
+    This exception is used to indicate that the application does not have the necessary
+    permissions to write to a specified file or directory, which may prevent
+    operations such as saving logs, downloading files, or creating directories.
+    """
+    pass

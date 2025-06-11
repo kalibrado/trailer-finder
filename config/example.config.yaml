@@ -132,6 +132,9 @@ YT_DLP_SPONSORS_BLOCK:
   - "filler"
   - "interaction"
 
+# Optional path to cookies.txt file for YouTube downloads
+YT_DLP_COOKIES: "/path/to/cookies.txt"
+
 # Settings for ffmpeg
 
 # Number of threads for processing

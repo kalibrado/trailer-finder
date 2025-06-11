@@ -40,19 +40,29 @@ import re
 from datetime import datetime, timezone
 import subprocess
 from typing import List, Dict, Union
-import requests
-import urllib3
+import requests  # type: ignore
+import urllib3  # type: ignore
 from modules.logger import Logger
 from modules.youtube_dl import YoutubeDL
-from modules.exceptions import FfmpegError, FfmpegCommandMissing, InsufficientDiskSpaceError
+from modules.exceptions import (
+    FfmpegError,
+    FfmpegCommandMissing,
+    InsufficientDiskSpaceError,
+    InsufficientDiskSpaceError,
+    WritePermissionError,
+)
 from modules.translator import Translator
+from modules.decorators import exception_logger
 
 # Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
+@exception_logger(Logger)
 class Utils(Translator):
-    def __init__(self, logger: Logger, config: Dict[str, Union[str, int, bool, list]]) -> None:
+    def __init__(
+        self, logger: Logger, config: Dict[str, Union[str, int, bool, list]]
+    ) -> None:
         """
         Initialize Utils class with a logger and configuration.
 
@@ -84,17 +94,19 @@ class Utils(Translator):
         :return: Title of the item
         """
         # Using self.config.get with a default value
-        title_key = self.config.get("APP_USE_TITLE", "title")
+        title_key = str(self.config.get("APP_USE_TITLE", "title"))
 
         title = item["title"]
 
         # Check if title_key contains "title" (case insensitive)
-        if "title" in title_key.lower():
+        if isinstance(title_key, str) and "title" in title_key.lower():
             title = item.get(title_key, item["title"])
 
         return title
 
-    def trailer_pull(self, tmdb_id: str, item_type: str, item: dict, seasonNumber=None) -> List[Dict[str, Union[str, bool, datetime]]]:
+    def trailer_pull(
+        self, tmdb_id: str, item_type: str, item: dict, seasonNumber=None
+    ) -> List[dict]:
         """
         Retrieve trailer information from TMDB API.
 
@@ -114,7 +126,7 @@ class Utils(Translator):
             url = f"https://{base_link}/{item_type}/{tmdb_id}/videos"
 
         headers = {"accept": "application/json"}
-        self.logger.info("Retrieving information about « {info} ».", info=url)
+        self.logger.info("retrieving_info", info=url)
 
         try:
             response = requests.get(
@@ -138,17 +150,23 @@ class Utils(Translator):
                         "query_type": f"API (TMDB) {url}",
                         "yt_link": self.config["YT_DLP_BASE_URL"] + trailer["key"],
                         "name": self.replace_slash_backslash(trailer["name"]),
-                        "published_at": datetime.strptime(trailer["published_at"], "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc),
+                        "published_at": datetime.strptime(
+                            trailer["published_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                        ).replace(tzinfo=timezone.utc),
                     }
                     trailers.append(trailer_data)
 
             if self.config.get("APP_ONLY_ONE_TRAILER", False):
-                trailers.sort(key=lambda x: abs(datetime.now(timezone.utc) - x["published_at"]))
+                trailers.sort(
+                    key=lambda x: abs(datetime.now(timezone.utc) - x["published_at"])
+                )
 
             return trailers
 
         except (requests.RequestException, ValueError) as e:
-            self.logger.error("Failed to retrieve trailers from TMDB API: {error}", error=str(e))
+            self.logger.error(
+                "Failed to retrieve trailers from TMDB API: {error}", error=str(e)
+            )
             return []
 
     def _should_add_trailer(self, trailer: dict) -> bool:
@@ -159,15 +177,33 @@ class Utils(Translator):
         :return: True if the trailer meets all conditions, False otherwise
         """
         conditions = [
-            (self.config.get("TMDB_OFFICIAL", True), lambda x: x.get("official", False) == self.config.get("TMDB_OFFICIAL", True)),
-            (self.config.get("TMDB_TYPE_ITEM", None), lambda x: x.get("type") in self.config.get("TMDB_TYPE_ITEM", None)),
-            (self.config.get("TMDB_SIZE", None), lambda x: x.get("size") == self.config.get("TMDB_SIZE", None)),
-            (self.config.get("TMDB_SOURCE", None), lambda x: x.get("site") == self.config.get("TMDB_SOURCE", None)),
+            (
+                self.config.get("TMDB_OFFICIAL", True),
+                lambda x: x.get("official", False)
+                == self.config.get("TMDB_OFFICIAL", True),
+            ),
+            (
+                self.config.get("TMDB_TYPE_ITEM", None),
+                lambda x: x.get("type")
+                in list(str(self.config.get("TMDB_TYPE_ITEM", "")).split("|")),
+            ),
+            (
+                self.config.get("TMDB_SIZE", None),
+                lambda x: x.get("size") == self.config.get("TMDB_SIZE", None),
+            ),
+            (
+                self.config.get("TMDB_SOURCE", None),
+                lambda x: x.get("site") == self.config.get("TMDB_SOURCE", None),
+            ),
         ]
 
-        return all(condition[0] is None or condition[1](trailer) for condition in conditions)
+        return all(
+            condition[0] is None or condition[1](trailer) for condition in conditions
+        )
 
-    def post_process(self, cache_path: str, files: List[str], item: Dict[str, str]) -> None:
+    def post_process(
+        self, cache_path: str, files: List[str], item: Dict[str, str]
+    ) -> None:
         """
         Perform post-processing on downloaded trailers using FFMPEG.
 
@@ -175,12 +211,17 @@ class Utils(Translator):
         :param files: List of downloaded trailer filenames
         :param item: Metadata of the item (movie or TV show)
         """
-        trailers_path = os.path.join(item["path"], "trailers")
+        trailers_path = os.path.join(item["trailers_dest"], "trailers")
         os.makedirs(trailers_path, exist_ok=True)
 
-        ffmpeg_cmd_template = self.config.get("FFMPEG_COMMAND_TEMPLATE", None)
+        ffmpeg_cmd_template = str(
+            self.config.get(
+                "FFMPEG_COMMAND_TEMPLATE",
+                "ffmpeg -i '{path}' -threads {thread} -c:v copy -c:a aac -af volume=-7dB -bufsize {buffer} -preset slow -y '{path_file}'",
+            )
+        )
         if ffmpeg_cmd_template is None:
-            raise FfmpegCommandMissing(self.translate("The ffmpeg command is not defined in config.yaml."))
+            raise FfmpegCommandMissing(self.translate("ffmpeg_not_defined"))
 
         # Iterate through each downloaded file and perform FFMPEG processing
         for file in files:
@@ -195,7 +236,7 @@ class Utils(Translator):
             )
 
             # Log the FFMPEG command used for processing
-            self.logger.info("ffmpeg command « {cmd} ».", cmd=cmd)
+            self.logger.info("ffmpeg_cmd", cmd=cmd)
 
             subprocess_args = {}
             if self.config.get("APP_QUIET_MODE", False):
@@ -205,9 +246,9 @@ class Utils(Translator):
 
             try:
                 # Execute the FFMPEG command with subprocess
-                subprocess.run(cmd, **subprocess_args, check=False, shell=True)
+                subprocess.run(str(cmd), check=False, shell=True, **subprocess_args)  # type: ignore
             except subprocess.CalledProcessError as e:
-                raise FfmpegError(self.translate("The ffmpeg command has an error « {error} ».", error=e))
+                raise FfmpegError(self.translate("ffmpeg_error", error=e))
         # Always remove the cache_path after FFMPEG execution
         shutil.rmtree(cache_path)
 
@@ -219,13 +260,16 @@ class Utils(Translator):
         :param item: Metadata of the item (movie or TV show)
         """
 
-        prefix_search = self.config.get("YT_SEARCH_PREFIX", [])
+        prefix_value = self.config.get("YT_SEARCH_PREFIX", [])
+        prefix_search = (
+            prefix_value if isinstance(prefix_value, list) else [prefix_value]
+        )
 
         arr_id_trailer = item.get("youTubeTrailerId", None)
         if arr_id_trailer:
             link = {
                 "name": self.replace_slash_backslash(self.get_title(item)),
-                "yt_link": self.config["YT_DLP_BASE_URL"] + arr_id_trailer,
+                "yt_link": str(self.config["YT_DLP_BASE_URL"]) + arr_id_trailer,
                 "query_type": f"*arr youTube id: {arr_id_trailer}",
             }
             links.append(link)
@@ -246,26 +290,36 @@ class Utils(Translator):
                 self.post_process(cache_path, files, item)
                 return
 
-    def check_space(self, path: str) -> bool:
+    def check_space(self, path: str) -> bool | Exception:
         """
-        Check available disk space to ensure there is enough space to download and process trailers.
+        Check if the path has enough free space and write permissions.
 
         :param path: Path where trailers will be downloaded
-        :return: Boolean indicating if there is enough space
+        :return: True if everything is OK, otherwise raises an exception
         """
-
-        total, used, free = shutil.disk_usage(path)
+        _, _, free = shutil.disk_usage(path)
         free_gb = free / (1024**3)  # Convert bytes to GB
-        if free_gb < self.config.get("APP_FREE_SPACE_GB", 5):
+
+        min_free_space = float(str(self.config.get("APP_FREE_SPACE_GB", 5)))
+        if free_gb < min_free_space:
             raise InsufficientDiskSpaceError(
                 self.translate(
-                    "« {path} » does not have enough disk space. Only « {free_gb} » GB are available.",
+                    "no_space",
                     path=path,
                     free_gb=int(free_gb),
                 )
             )
 
-    def get_new_trailers(self, trailer_names: List[str], existing_files: List[str]) -> List[str]:
+        if not os.access(path, os.W_OK):
+            raise WritePermissionError(
+                self.translate("premission_denied", path=path)
+            )
+
+        return True
+
+    def get_new_trailers(
+        self, trailer_names: List[dict], existing_files: List[str]
+    ) -> List[dict]:
         """
         Get trailer names that do not already exist in the specified folder.
 
