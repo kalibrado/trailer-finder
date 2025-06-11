@@ -54,7 +54,7 @@ To stop the tool, use `Ctrl + C` in the console. Logs are displayed in the conso
 
 ## Docker
 
-To run Trailer Finder in Docker, see our full [Unraid Deployment Guide](https://github.com/kalibrado/trailer-finder/blob/main/docs/UNRAID_DEPLOY.md) or follow the quick steps below:
+To run Trailer Finder in Docker, see our full [Unraid Deployment Guide](https://github.com/kalibrado/trailer-finder/blob/main/UNRAID_DEPLOY.md) or follow the quick steps below:
 
 ```bash
 docker run -d \
