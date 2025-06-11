@@ -14,6 +14,11 @@ RUN apk update && apk add --no-cache ffmpeg \
 
 COPY . .
 
+RUN adduser -D -H -u 1000 trailer-finder \
+      && chown -R trailer-finder:trailer-finder /app
+
 RUN rm -rf /usr/local/bin/pip /usr/local/bin/pip3
+
+USER trailer-finder
 
 CMD ["python", "-u", "main.py"]
