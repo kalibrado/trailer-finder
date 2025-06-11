@@ -4,8 +4,6 @@
 [![Dependabot Updates](https://github.com/kalibrado/trailer-finder/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/dependabot/dependabot-updates)
 [![CodeQL](https://github.com/kalibrado/trailer-finder/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/kalibrado/trailer-finder/actions/workflows/github-code-scanning/codeql)
 
-[![Buy Me A Beer](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/leonardofod)
-
 ## Introduction
 
 <table>
@@ -54,17 +52,37 @@ python main.py
 
 To stop the tool, use `Ctrl + C` in the console. Logs are displayed in the console and can be redirected to log files if needed.
 
-## Contributing
-
-We welcome contributions! Please follow the instructions in our [contributing guide](https://kalibrado.github.io/trailer-finder/general/contributing.html) on GitHub Pages.
-
 ## Docker
 
-To run Trailer Finder with Docker, follow the instructions available in our [Docker section](https://kalibrado.github.io/trailer-finder/general/usage.html#using-docker) on GitHub Pages.
+To run Trailer Finder in Docker, see our full [Unraid Deployment Guide](https://github.com/kalibrado/trailer-finder/blob/main/docs/UNRAID_DEPLOY.md) or follow the quick steps below:
+
+```bash
+docker run -d \
+  --name trailer-finder \
+  -v /mnt/user/appdata/trailer-finder/config:/app/config:ro \
+  -v /mnt/user/media:/mnt/media \
+  --network=host \
+  ghcr.io/kalibrado/trailer-finder:latest
+```
+
+### ⚠️ Path Consistency Warning
+
+> To work properly, the paths seen by **Radarr**, **Sonarr**, and **Trailer Finder** must be the same.
+> For example, if Radarr uses `/mnt/media/Movies/Inception (2010)`, then Trailer Finder must also access it via the exact same path.
+
+📌 Ensure identical volume mounts across all containers:
+
+| Volume | Host Path         | Container Path |
+| ------ | ----------------- | -------------- |
+| Media  | `/mnt/user/media` | `/mnt/media`   |
 
 ## Troubleshooting
 
 If you encounter issues, please refer to the [troubleshooting section](https://kalibrado.github.io/trailer-finder/general/troubleshooting.html) of our documentation or [open an issue](https://github.com/kalibrado/trailer-finder/issues) on GitHub.
+
+## Contributing
+
+We welcome contributions! Please follow the instructions in our [contributing guide](https://kalibrado.github.io/trailer-finder/general/contributing.html) on GitHub Pages.
 
 ## License
 
@@ -80,4 +98,6 @@ For any questions, you can reach out to me through the following channels:
 - **Discord:** Join and connect with the community on our [Discord server](https://discord.gg/kFdNCbnm).
 
 
-Thank you for using Trailer Finder!
+Thank you for using Trailer Finder! 🚀
+
+[![Buy Me A Beer](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/leonardofod)
